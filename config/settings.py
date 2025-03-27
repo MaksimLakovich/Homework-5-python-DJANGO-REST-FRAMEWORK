@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'rest_framework',
     # Приложения проекта
     'users',
+    'lms_system',
 ]
 
 MIDDLEWARE = [

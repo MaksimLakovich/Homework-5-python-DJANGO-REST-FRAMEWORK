@@ -2,9 +2,11 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField  # type: ignore
 
+from users.managers import CustomUserManager
+
 
 class CustomUser(AbstractUser):
-    """Модель CustomUser представляет пользователя на платформе для онлайн-обучения."""
+    """Модель CustomUser представляет пользователя на платформе для онлайн-обучения (авторизация по email)."""
 
     username = None  # type: ignore
     email = models.EmailField(
@@ -35,6 +37,11 @@ class CustomUser(AbstractUser):
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
+
+    # Указываю кастомный менеджер для пользователя без поля username.
+    # Указываю "type: ignore" чтоб убрать ошибку типизации mypy, так как пока не разобрался как правильно
+    # работать с типизацией TypeVar.
+    objects = CustomUserManager()  # type: ignore
 
     def __str__(self):
         """Метод определяет строковое представление объекта. Полезно для отображения объектов в админке/консоли."""
