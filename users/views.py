@@ -1,3 +1,11 @@
-from django.shortcuts import render
+from rest_framework import generics
 
-# Create your views here.
+from users.models import CustomUser
+from users.serializers import CustomUserSerializer
+
+
+class CustomUserRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
+    """Класс-контроллер на основе базового Generic-класса для редактирования профилей любых пользователей."""
+
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
