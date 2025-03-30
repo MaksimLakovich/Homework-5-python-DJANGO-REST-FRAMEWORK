@@ -11,8 +11,8 @@ urlpatterns = [
     # - это заданное пространство имен, которое есть в users/urls.py с помощью UsersConfig.name
     # 2) route:""
     # - ничего не указываю, так как DefaultRouter() из lms_system/urls.py создаст URL-ы (например, /api/lms/courses/)
-    path("", include("users.urls", namespace="users")),
-    path("", include("lms_system.urls", namespace="lms")),
+    path("api/", include("users.urls", namespace="users")),
+    path("api/", include("lms_system.urls", namespace="lms")),
 ]
 
 if settings.DEBUG:
