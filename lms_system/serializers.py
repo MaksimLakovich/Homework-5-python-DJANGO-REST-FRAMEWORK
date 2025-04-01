@@ -5,16 +5,32 @@ from lms_system.models import Course, Lesson
 
 class CourseSerializer(serializers.ModelSerializer):
     """Класс-сериализатор с использованием класса ModelSerializer для осуществления базовой сериализация в DRF на
-    основе модели Course. Описывает то, какие поля модели Course будут участвовать в сериализации и десериализации."""
+    основе модели Course. Описывает то, какие поля модели Course будут участвовать в сериализации и десериализации.
+    """
+
+    count_lessons = serializers.SerializerMethodField()
+
+    def get_count_lessons(self, instance):
+        """Функция для определения количества уроков в курсе. Запрос в БД для подсчёта связанных уроков."""
+        return (
+            instance.lessons.count()
+        )  # Учитываю кастомный related_name="lessons" в модели Lesson
 
     class Meta:
         model = Course
-        fields = ["id", "title", "preview", "description",]  # можно указывать нужные поля модели
+        fields = [
+            "id",
+            "title",
+            "preview",
+            "description",
+            "count_lessons",
+        ]  # можно указывать нужные поля модели
 
 
 class LessonSerializer(serializers.ModelSerializer):
     """Класс-сериализатор с использованием класса ModelSerializer для осуществления базовой сериализация в DRF на
-    основе модели Lesson. Описывает то, какие поля модели Lesson будут участвовать в сериализации и десериализации."""
+    основе модели Lesson. Описывает то, какие поля модели Lesson будут участвовать в сериализации и десериализации.
+    """
 
     class Meta:
         model = Lesson
