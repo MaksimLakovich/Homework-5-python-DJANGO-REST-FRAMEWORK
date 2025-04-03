@@ -9,7 +9,9 @@ from users.serializers import CustomUserSerializer, PaymentsSerializer
 class CustomUserRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
     """Класс-контроллер на основе базового Generic-класса для редактирования профилей любых пользователей."""
 
-    queryset = CustomUser.objects.all()
+    # Оптимизация работы - использование prefetch_related("payments"), что подтянет платежи одним SQL-запросом.
+    # Это ускорит загрузку профиля, потому что платежи загрузятся за один SQL-запрос.
+    queryset = CustomUser.objects.prefetch_related("payments").all()
     serializer_class = CustomUserSerializer
 
 
