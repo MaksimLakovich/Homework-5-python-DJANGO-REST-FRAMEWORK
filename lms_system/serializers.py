@@ -19,7 +19,7 @@ class CourseSerializer(serializers.ModelSerializer):
     """
 
     count_lessons = serializers.SerializerMethodField()
-    lessons_info = LessonSerializer(many=True)
+    lessons = LessonSerializer(many=True)
 
     def get_count_lessons(self, instance):
         """Функция для определения количества уроков в курсе. Запрос в БД для подсчёта связанных уроков."""
@@ -35,5 +35,5 @@ class CourseSerializer(serializers.ModelSerializer):
             "preview",
             "description",
             "count_lessons",
-            "lessons_info",
+            "lessons",
         ]  # можно указывать нужные поля модели
