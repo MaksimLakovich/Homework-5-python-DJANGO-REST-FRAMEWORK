@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField  # type: ignore
 
+from lms_system.models import Course, Lesson
 from users.managers import CustomUserManager
 
 
@@ -51,3 +52,65 @@ class CustomUser(AbstractUser):
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
         ordering = ["email"]
+
+
+class Payments(models.Model):
+    """Модель Payments представляет платежи за Lesson и/или за Course на платформе для онлайн-обучения."""
+
+    METHOD = [
+        ("transfer", "Перевод на счет"),
+        ("cash", "Наличные"),
+    ]
+
+    user = models.ForeignKey(
+        to=CustomUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="payments",
+        verbose_name="Пользователь:",
+        help_text="Укажите пользователя",
+    )
+    payment_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Дата и время оплаты:",
+        help_text="Укажите дату и время оплаты",
+    )
+    paid_course = models.ForeignKey(
+        to=Course,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="payments_for_courses",
+        verbose_name="Оплаченный курс:",
+        help_text="Укажите оплаченный курс",
+    )
+    paid_lesson = models.ForeignKey(
+        to=Lesson,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="payments_for_lessons",
+        verbose_name="Оплаченный урок:",
+        help_text="Укажите оплаченный урок",
+    )
+    payment_amount = models.FloatField(
+        null=False,
+        blank=False,
+        verbose_name="Сумма платежа:",
+        help_text="Укажите сумму платежа",
+    )
+    payment_method = models.CharField(
+        max_length=100,
+        choices=METHOD,
+        verbose_name="Метод платежа:",
+        help_text="Укажите метод платежа",
+    )
+
+    def __str__(self):
+        """Метод определяет строковое представление объекта. Полезно для отображения объектов в админке/консоли."""
+        return f"Платеж от {self.user.email} на сумму {self.payment_amount} / {self.payment_date}"
+
+    class Meta:
+        verbose_name = "Платеж"
+        verbose_name_plural = "Платежи"
