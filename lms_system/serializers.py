@@ -19,7 +19,7 @@ class CourseSerializer(serializers.ModelSerializer):
     """
 
     count_lessons = serializers.SerializerMethodField()
-    lessons = LessonSerializer(many=True)
+    lessons = LessonSerializer(many=True, read_only=True)
 
     def get_count_lessons(self, instance):
         """Функция для определения количества уроков в курсе. Запрос в БД для подсчёта связанных уроков."""
