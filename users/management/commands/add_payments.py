@@ -9,7 +9,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         Payments.objects.all().delete()
-        call_command("loaddata", "data/payments.json")
+        call_command("loaddata", "data/fixtures/payments.json")
         self.stdout.write(
             self.style.SUCCESS(
                 "Успешно загружены тестовые данные из фикстуры (payments)"

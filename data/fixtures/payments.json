@@ -3,7 +3,7 @@
         "model": "users.payments",
         "pk": 1,
         "fields": {
-            "user": 3,
+            "user": 13,
             "payment_date": "2025-04-02T15:38:18",
             "paid_course": 1,
             "paid_lesson": null,
@@ -15,7 +15,7 @@
         "model": "users.payments",
         "pk": 2,
         "fields": {
-            "user": 2,
+            "user": 12,
             "payment_date": "2025-04-01T15:38:18",
             "paid_course": 1,
             "paid_lesson": null,
@@ -27,7 +27,7 @@
         "model": "users.payments",
         "pk": 3,
         "fields": {
-            "user": 3,
+            "user": 13,
             "payment_date": "2025-03-31T15:38:18",
             "paid_course": 1,
             "paid_lesson": null,
@@ -39,7 +39,7 @@
         "model": "users.payments",
         "pk": 4,
         "fields": {
-            "user": 3,
+            "user": 13,
             "payment_date": "2025-03-30T15:38:18",
             "paid_course": null,
             "paid_lesson": 2,
@@ -51,7 +51,7 @@
         "model": "users.payments",
         "pk": 5,
         "fields": {
-            "user": 2,
+            "user": 12,
             "payment_date": "2025-03-29T15:38:18",
             "paid_course": null,
             "paid_lesson": 2,
@@ -63,7 +63,7 @@
         "model": "users.payments",
         "pk": 6,
         "fields": {
-            "user": 3,
+            "user": 13,
             "payment_date": "2025-03-28T15:38:18",
             "paid_course": null,
             "paid_lesson": 2,
@@ -75,7 +75,7 @@
         "model": "users.payments",
         "pk": 7,
         "fields": {
-            "user": 2,
+            "user": 12,
             "payment_date": "2025-03-27T15:38:18",
             "paid_course": null,
             "paid_lesson": 1,
@@ -87,7 +87,7 @@
         "model": "users.payments",
         "pk": 8,
         "fields": {
-            "user": 2,
+            "user": 12,
             "payment_date": "2025-03-26T15:38:18",
             "paid_course": null,
             "paid_lesson": 1,
@@ -99,7 +99,7 @@
         "model": "users.payments",
         "pk": 9,
         "fields": {
-            "user": 2,
+            "user": 12,
             "payment_date": "2025-03-25T15:38:18",
             "paid_course": null,
             "paid_lesson": 3,
@@ -111,7 +111,7 @@
         "model": "users.payments",
         "pk": 10,
         "fields": {
-            "user": 2,
+            "user": 12,
             "payment_date": "2025-03-24T15:38:18",
             "paid_course": null,
             "paid_lesson": 4,
