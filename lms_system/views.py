@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
 from lms_system.models import Course, Lesson
 from lms_system.serializers import CourseSerializer, LessonSerializer
-from users.permissions import IsModerator
+from users.permissions import IsModerator, IsOwner
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -14,18 +14,29 @@ class CourseViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         """Определяет права доступа к действиям с курсами в зависимости от типа запроса (action).
-        - list / retrieve / update / partial_update:
-            Доступ разрешён для модераторов, администраторов и просто аутентифицированных пользователей.
-            Модераторы не могут создавать или удалять, но могут просматривать и редактировать.
-        - create / destroy:
-            Только для администраторов (например, суперпользователь).
-        Возвращает список активных permission-классов."""
+        - create / list:
+            Доступ разрешён только администраторам (IsAdminUser) и аутентифицированным (IsAuthenticated).
+            Владелец курса назначается автоматически (self.request.user).
+        - retrieve / update / partial_update:
+            Владелец курса (IsOwner) может просматривать и редактировать свои курсы.
+            Модератор (IsModerator) может просматривать и редактировать любые курсы.
+        - destroy:
+            Только владелец курса может удалить свой курс.
+            Администратор (IsAdminUser) может удалять любые курсы.
+        Возвращает список активных permission-классов в зависимости от действия."""
 
-        if self.action in ["list", "retrieve", "update", "partial_update"]:
-            self.permission_classes = [IsModerator | IsAdminUser | IsAuthenticated]
-        elif self.action in ["create", "destroy"]:
-            self.permission_classes = [IsAdminUser]
+        if self.action in ["create", "list"]:
+            self.permission_classes = [IsAuthenticated | IsAdminUser]
+        elif self.action in ["retrieve", "update", "partial_update"]:
+            self.permission_classes = [IsAuthenticated & IsOwner | IsModerator]
+        elif self.action == "destroy":
+            self.permission_classes = [IsAuthenticated & IsOwner | IsAdminUser]
         return [permission() for permission in self.permission_classes]
+
+    def perform_create(self, serializer):
+        """Определяет и фиксирует владельцем Пользователя, который создал данный объект."""
+
+        serializer.save(owner=self.request.user)
 
 
 class LessonListCreateAPIView(generics.ListCreateAPIView):
@@ -36,15 +47,19 @@ class LessonListCreateAPIView(generics.ListCreateAPIView):
 
     def get_permissions(self):
         """Определяет права доступа к действиям со списком и созданием уроков:
-        - GET (список - List): доступен модераторам, администраторам и просто аутентифицированных пользователей;
-        - POST (создание - Create): доступен только администраторам (например, суперпользователь).
+        - GET (список - List), POST (создание - Create):
+            Доступ разрешён только администраторам (IsAdminUser) и аутентифицированным (IsAuthenticated).
+            Владелец урока назначается автоматически (self.request.user).
         Возвращает соответствующий список permission-классов."""
 
-        if self.request.method == "POST":
-            self.permission_classes = [IsAdminUser]
-        else:
-            self.permission_classes = [IsModerator | IsAdminUser | IsAuthenticated]
+        if self.request.method in ["GET", "POST"]:
+            self.permission_classes = [IsAuthenticated | IsAdminUser]
         return [permission() for permission in self.permission_classes]
+
+    def perform_create(self, serializer):
+        """Присваивает текущего авторизованного пользователя как владельца (owner) создаваемого объекта."""
+
+        serializer.save(owner=self.request.user)
 
 
 class LessonRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -55,13 +70,16 @@ class LessonRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_permissions(self):
         """Определяет права доступа к действиям с конкретным уроком:
-        - GET (просмотр - Retrieve), PUT/PATCH (обновление - Update): доступны модераторам, администраторам и
-        просто аутентифицированных пользователей;
-        - DELETE (удаление - Destroy): доступно только администраторам (например, суперпользователь).
-        Возвращает соответствующий список permission-классов."""
+        - GET (просмотр - Retrieve), PUT/PATCH (обновление - Update):
+            Владелец урока (IsOwner) может просматривать и редактировать свои уроки.
+            Модератор (IsModerator) может просматривать и редактировать любые уроки.
+        - DELETE (удаление - Destroy):
+            Только владелец урока может удалить свой урок.
+            Администратор (IsAdminUser) может удалять любые уроки.
+        Возвращает список активных permission-классов в зависимости от действия."""
 
         if self.request.method == "DELETE":
-            self.permission_classes = [IsAdminUser]
+            self.permission_classes = [IsAuthenticated & IsOwner | IsAdminUser]
         else:
-            self.permission_classes = [IsModerator | IsAdminUser | IsAuthenticated]
+            self.permission_classes = [IsAuthenticated & IsOwner | IsModerator]
         return [permission() for permission in self.permission_classes]

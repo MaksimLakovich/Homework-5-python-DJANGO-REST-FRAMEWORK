@@ -22,6 +22,18 @@ class Course(models.Model):
         verbose_name="Описание курса:",
         help_text="Укажите описание",
     )
+    owner = models.ForeignKey(
+        # Использую строку в to="users.CustomUser" (рекомендуется для ForeignKey к User) вместо to=CustomUser, чтоб
+        # избежать ошибки циклического импорта (circular import), которая возникает из-за того, что
+        # в "users/models.py" уже есть "from lms_system.models import Course, Lesson"
+        to="users.CustomUser",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="owned_courses",
+        verbose_name="Владелец:",
+        help_text="Укажите пользователя, создавшего курс",
+    )
 
     def __str__(self):
         """Метод определяет строковое представление объекта. Полезно для отображения объектов в админке/консоли."""
@@ -66,6 +78,18 @@ class Lesson(models.Model):
         null=True,
         verbose_name="Видео урока:",
         help_text="Загрузите видео",
+    )
+    owner = models.ForeignKey(
+        # Использую строку в to="users.CustomUser" (рекомендуется для ForeignKey к User) вместо to=CustomUser, чтоб
+        # избежать ошибки циклического импорта (circular import), которая возникает из-за того, что
+        # в "users/models.py" уже есть "from lms_system.models import Course, Lesson"
+        to="users.CustomUser",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="owned_lessons",
+        verbose_name="Владелец:",
+        help_text="Укажите пользователя, создавшего урок",
     )
 
     def __str__(self):
