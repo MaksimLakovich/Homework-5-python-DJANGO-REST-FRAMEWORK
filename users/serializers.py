@@ -22,6 +22,25 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     payments = PaymentsSerializer(many=True, read_only=True)
 
+    def to_representation(self, instance):
+        """Возвращает сериализованное представление пользователя.
+        - Если запрашивающий пользователь смотрит "свой профиль", то отображаются все поля.
+        - Если запрашивающий пользователь смотрит "чужой профиль", то скрываются конфиденциальные поля:
+            - last_name (фамилия)
+            - payments (история платежей)
+            - password (в любом случае не нужен в ответе)
+        Используется для динамической настройки отображения данных в зависимости от прав доступа."""
+
+        representation = super().to_representation(instance)
+
+        request = self.context.get("request")
+        if request and request.user != instance:  #Значит пользователь смотрит чужой профиль и нужно скрыть часть полей
+            representation.pop("last_name", None)
+            representation.pop("payments", None)
+            representation.pop("password", None)
+
+        return representation
+
     class Meta:
         model = CustomUser
         fields = "__all__"
