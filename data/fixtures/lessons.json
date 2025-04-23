@@ -7,7 +7,8 @@
             "description": "Описание урока 1 по курсу Основы Python.",
             "course": 1,
             "preview": null,
-            "video_url": "https://youtube.com/lesson_1"
+            "video_url": "https://youtube.com/lesson_1",
+            "owner": 12
         }
     },
     {
@@ -18,7 +19,8 @@
             "description": "Описание урока 2 по курсу Основы Python.",
             "course": 1,
             "preview": null,
-            "video_url": "https://youtube.com/lesson_2"
+            "video_url": "https://youtube.com/lesson_2",
+            "owner": 12
         }
     },
     {
@@ -29,7 +31,8 @@
             "description": "Описание урока 3 по курсу Основы Python.",
             "course": 1,
             "preview": null,
-            "video_url": "https://youtube.com/lesson_3"
+            "video_url": "https://youtube.com/lesson_3",
+            "owner": 12
         }
     },
     {
@@ -40,7 +43,8 @@
             "description": "Описание урока 4 по курсу Основы Python.",
             "course": 1,
             "preview": null,
-            "video_url": "https://youtube.com/lesson_4"
+            "video_url": "https://youtube.com/lesson_4",
+            "owner": 12
         }
     },
     {
@@ -51,7 +55,8 @@
             "description": "Описание урока 1 по курсу Django для начинающих.",
             "course": 2,
             "preview": null,
-            "video_url": "https://youtube.com/lesson_5"
+            "video_url": "https://youtube.com/lesson_5",
+            "owner": 13
         }
     },
     {
@@ -62,7 +67,8 @@
             "description": "Описание урока 2 по курсу Django для начинающих.",
             "course": 2,
             "preview": null,
-            "video_url": "https://youtube.com/lesson_5"
+            "video_url": "https://youtube.com/lesson_6",
+            "owner": 13
         }
     }
 ]
