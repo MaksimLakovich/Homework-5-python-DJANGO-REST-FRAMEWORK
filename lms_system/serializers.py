@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from lms_system.models import Course, Lesson
+from lms_system.validators import YoutubeDomainValidator
 
 
 class LessonSerializer(serializers.ModelSerializer):
@@ -11,6 +12,7 @@ class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = "__all__"  # можно указать автоматом все поля модели
+        validators = [YoutubeDomainValidator(field="video_url")]
 
 
 class CourseSerializer(serializers.ModelSerializer):
