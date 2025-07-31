@@ -67,5 +67,5 @@ def validate_domain_links(field):
 
         if domain not in allowed_domains:
             raise serializers.ValidationError(
-                {field: "Разрешены только ссылки на YouTube (youtube.com)."}
+                "Разрешены только ссылки на YouTube (youtube.com)."
             )
