@@ -51,3 +51,21 @@ class YoutubeDomainValidator:
                     raise serializers.ValidationError(
                         {field: "Разрешены только ссылки на YouTube (youtube.com)."}
                     )
+
+
+def validate_domain_links(field):
+    """Функция-валидатор для проверки допустимости домена в передаваемых пользователями URL. Разрешает только ссылки
+    на YouTube (youtube.com и www.youtube.com)."""
+    allowed_domains = {"youtube.com", "www.youtube.com"}
+
+    url_pattern = re.compile(r"https?://[^\s]+")
+    urls = url_pattern.findall(field)
+
+    for url in urls:
+        parsed_url = urlparse(url)
+        domain = parsed_url.netloc.lower()
+
+        if domain not in allowed_domains:
+            raise serializers.ValidationError(
+                {field: "Разрешены только ссылки на YouTube (youtube.com)."}
+            )

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from lms_system.models import Course, Lesson
-from lms_system.validators import YoutubeDomainValidator
+from lms_system.validators import YoutubeDomainValidator, validate_domain_links
 
 
 class LessonSerializer(serializers.ModelSerializer):
@@ -24,6 +24,7 @@ class CourseSerializer(serializers.ModelSerializer):
 
     count_lessons = serializers.SerializerMethodField()
     lessons = LessonSerializer(many=True, read_only=True)
+    description = serializers.CharField(validators=[validate_domain_links])
 
     def get_count_lessons(self, instance):
         """Функция для определения количества уроков в курсе. Запрос в БД для подсчёта связанных уроков."""
