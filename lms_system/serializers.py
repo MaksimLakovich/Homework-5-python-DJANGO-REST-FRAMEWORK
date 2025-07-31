@@ -12,7 +12,10 @@ class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = "__all__"  # можно указать автоматом все поля модели
-        validators = [YoutubeDomainValidator(field="video_url")]
+        validators = [
+            YoutubeDomainValidator(field="video_url"),
+            YoutubeDomainValidator(field="description"),
+        ]
 
 
 class CourseSerializer(serializers.ModelSerializer):
