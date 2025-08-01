@@ -100,3 +100,30 @@ class Lesson(models.Model):
         verbose_name = "Урок"
         verbose_name_plural = "Уроки"
         ordering = ["title"]
+
+
+class Subscription(models.Model):
+    """Модель Subscription представляет Подписку на обновление курса (Course) для пользователя (CustomUser)."""
+    course = models.ForeignKey(
+        to=Course,
+        on_delete=models.CASCADE,
+        related_name="subscriptions",
+        verbose_name="Курс подписки:",
+        help_text="Укажите курс подписки",
+    )
+    user = models.ForeignKey(
+        to="users.CustomUser",
+        on_delete=models.CASCADE,
+        related_name="subscribed_courses",
+        verbose_name="Подписчик:",
+        help_text="Укажите подписчика",
+    )
+
+    def __str__(self):
+        """Метод определяет строковое представление объекта. Полезно для отображения объектов в админке/консоли."""
+        return f"Пользователь {self.user} подписан на {self.course}"
+
+    class Meta:
+        verbose_name = "Подписка"
+        verbose_name_plural = "Подписки"
+        ordering = ["course"]
