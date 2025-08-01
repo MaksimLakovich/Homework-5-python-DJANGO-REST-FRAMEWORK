@@ -3,6 +3,7 @@ from django.db import models
 
 class Course(models.Model):
     """Модель Course представляет Курс на платформе для онлайн-обучения."""
+
     title = models.CharField(
         max_length=500,
         unique=True,
@@ -47,6 +48,7 @@ class Course(models.Model):
 
 class Lesson(models.Model):
     """Модель Lesson представляет Урок на платформе для онлайн-обучения."""
+
     course = models.ForeignKey(
         to=Course,
         on_delete=models.CASCADE,
@@ -104,17 +106,18 @@ class Lesson(models.Model):
 
 class Subscription(models.Model):
     """Модель Subscription представляет Подписку на обновление курса (Course) для пользователя (CustomUser)."""
+
     course = models.ForeignKey(
         to=Course,
         on_delete=models.CASCADE,
-        related_name="subscriptions",
+        related_name="subscriptions",  # Позволяет получить список всех подписок на курс: course.subscriptions.all()
         verbose_name="Курс подписки:",
         help_text="Укажите курс подписки",
     )
     user = models.ForeignKey(
         to="users.CustomUser",
         on_delete=models.CASCADE,
-        related_name="subscribed_courses",
+        related_name="subscribed_courses",  # Позволяет получить список курсов, на которые подписан пользователь
         verbose_name="Подписчик:",
         help_text="Укажите подписчика",
     )
