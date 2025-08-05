@@ -32,6 +32,8 @@ INSTALLED_APPS = [
     'django_filters',
     # Если будем использовать Localizations/translations, то нужно добавить REST_FRAMEWORD_SIMPLEJWT в INSTALLED_APPS
     'rest_framework_simplejwt',
+    # Добавляем drf_yasg для работы с Документацией DRF
+    'drf_yasg',
     # Приложения проекта
     'users',
     'lms_system',

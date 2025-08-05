@@ -16,6 +16,7 @@
 [13. Получение ключей .env](#title13) / 
 [14. Описание файла .flake8](#title14) / 
 [15. Описание файла mypy.ini](#title15) / 
+[16. Документация к API](#title16) / 
 
 
 
@@ -388,3 +389,10 @@ django_settings_module = config.settings
 [mypy-phonenumber_field.*]
 ignore_missing_imports = True
 ```
+
+
+
+
+# <a id="title16">16. Документация к API</a> 
+1. ***Swagger UI*** по адресу: http://127.0.0.1:8000/swagger/
+2. ***Redoc*** по адресу: http://127.0.0.1:8000/redoc/
