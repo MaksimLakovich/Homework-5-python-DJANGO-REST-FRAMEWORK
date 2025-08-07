@@ -16,10 +16,7 @@ class CustomUser(AbstractUser):
         help_text="Введите email",
     )
     phone_number = PhoneNumberField(
-        blank=True,
-        null=True,
-        verbose_name="Телефон:",
-        help_text="Введите телефон"
+        blank=True, null=True, verbose_name="Телефон:", help_text="Введите телефон"
     )
     city = models.CharField(
         max_length=100,
@@ -65,8 +62,8 @@ class Payments(models.Model):
     user = models.ForeignKey(
         to=CustomUser,
         on_delete=models.SET_NULL,
-        null=True,
         blank=True,
+        null=True,
         related_name="payments",
         verbose_name="Пользователь:",
         help_text="Укажите пользователя",
@@ -79,8 +76,8 @@ class Payments(models.Model):
     paid_course = models.ForeignKey(
         to=Course,
         on_delete=models.SET_NULL,
-        null=True,
         blank=True,
+        null=True,
         related_name="payments_for_courses",
         verbose_name="Оплаченный курс:",
         help_text="Укажите оплаченный курс",
@@ -88,15 +85,15 @@ class Payments(models.Model):
     paid_lesson = models.ForeignKey(
         to=Lesson,
         on_delete=models.SET_NULL,
-        null=True,
         blank=True,
+        null=True,
         related_name="payments_for_lessons",
         verbose_name="Оплаченный урок:",
         help_text="Укажите оплаченный урок",
     )
     payment_amount = models.FloatField(
-        null=False,
         blank=False,
+        null=False,
         verbose_name="Сумма платежа:",
         help_text="Укажите сумму платежа",
     )
@@ -105,6 +102,30 @@ class Payments(models.Model):
         choices=METHOD,
         verbose_name="Метод платежа:",
         help_text="Укажите метод платежа",
+    )
+    stripe_product_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Созданный продукт в платежной системе Stripe:",
+    )
+    stripe_price_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Созданная цена в платежной системе Stripe:",
+    )
+    stripe_session_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Созданная сессия для получения ссылки в платежной системе Stripe:",
+    )
+    payment_url = models.URLField(
+        max_length=400,
+        blank=True,
+        null=True,
+        verbose_name="Ссылка на оплату продукта:",
     )
 
     def __str__(self):
