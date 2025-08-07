@@ -15,8 +15,11 @@ def create_product_course(paid_course):
     данные из ответа Stripe. Но, если нужно будет хранить в БД что-то ещё (например, product.url, product.name и т.д.),
     то нужно возвращать весь объект.
     """
-    product = stripe.Product.create(name=paid_course.title)
-    return product.id
+    try:
+        product = stripe.Product.create(name=paid_course.title)
+        return product.id
+    except stripe.error.StripeError as e:
+        raise Exception(f"Ошибка при создании продукта в Stripe: {e.user_message}")
 
 
 def create_price(product_id, payment_amount):
@@ -28,15 +31,19 @@ def create_price(product_id, payment_amount):
     :return: Для дальнейшего процесса формирования оплаты в return хватит одного price.id. Возвращаем объект
     только тогда, если нам нужно хранить какие-то другие поля (например, currency, unit_amount и т.д.).
     """
-    price = stripe.Price.create(
-        currency="RUB",
-        unit_amount=int(payment_amount * 100),
-        # В create_price() можно использовать ***product_data={"id": product_id}*** вместо ***product=product_id***,
-        # если нам нужно одновременно создать нового продукта прям сразу тут в цене без create_product_course().
-        # Но, если продукт уже создан, то нужно использовать ***product=product_id*** вместо product_data.
-        product=product_id,
-    )
-    return price.id
+    try:
+        price = stripe.Price.create(
+            currency="RUB",
+            unit_amount=int(payment_amount * 100),
+            # В create_price() можно использовать ***product_data={"id": product_id}*** вместо
+            # ***product=product_id***, если нам нужно одновременно создать нового продукта прям сразу тут в цене
+            # без create_product_course(). Но, если продукт уже создан, то нужно использовать ***product=product_id***
+            # вместо product_data.
+            product=product_id,
+        )
+        return price.id
+    except stripe.error.StripeError as e:
+        raise Exception(f"Ошибка при создании цены в Stripe: {e.user_message}")
 
 
 def create_session(price_id):
@@ -49,9 +56,12 @@ def create_session(price_id):
     1) session.url - нужно отдать клиенту;
     2) session.id - нужно сохранить в модель для последующей проверки статуса (Session.retrieve).
     """
-    session = stripe.checkout.Session.create(
-        success_url="https://127.0.0.1:8000/",
-        line_items=[{"price": price_id, "quantity": 1}],
-        mode="payment",
-    )
-    return session.id, session.url
+    try:
+        session = stripe.checkout.Session.create(
+            success_url="https://127.0.0.1:8000/",
+            line_items=[{"price": price_id, "quantity": 1}],
+            mode="payment",
+        )
+        return session.id, session.url
+    except stripe.error.StripeError as e:
+        raise Exception(f"Ошибка при создании сессии в Stripe: {e.user_message}")
