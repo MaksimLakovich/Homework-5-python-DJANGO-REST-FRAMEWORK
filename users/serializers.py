@@ -13,15 +13,15 @@ class PaymentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payments
         fields = "__all__"
-        # Нельзя позволять клиенту вручную указывать stripe_product_id, stripe_price_id, stripe_session_id
-        # и payment_url при создании платежа (эти поля должны быть read-only). Аналогично и user тоже должен
-        # задаваться только из request.user, а не из данных клиента
+        # 1) Нельзя позволять клиенту вручную указывать stripe_product_id, stripe_price_id, stripe_session_id
+        # и payment_url при создании платежа (эти поля должны быть read-only).
+        # 2) Аналогично и user тоже должен задаваться только из request.user, а не из данных клиента
         read_only_fields = (
             "stripe_product_id",
             "stripe_price_id",
             "stripe_session_id",
             "payment_url",
-            "user",  # желательно не задавать явно - берётся из request.user
+            "user",
             "payment_date",
         )
 

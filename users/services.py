@@ -58,7 +58,8 @@ def create_session(price_id):
     """
     try:
         session = stripe.checkout.Session.create(
-            success_url="https://127.0.0.1:8000/",
+            # Только в продакшене (на хостинге с SSL/HTTPS) можно будет указать https://....
+            success_url="http://127.0.0.1:8000/",
             line_items=[{"price": price_id, "quantity": 1}],
             mode="payment",
         )
