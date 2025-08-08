@@ -112,7 +112,7 @@ class PaymentsListCreateAPIView(generics.ListCreateAPIView):
         return Payments.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        """Переопределяю метод для создания платежа с интеграцией к платёжной системе Stripe.
+        """Создание платежа с интеграцией к платёжной системе Stripe (если указан соответствующий payment_method).
         - Создаётся продукт в Stripe (по .title в объекте продукта);
         - Создаётся цена (в копейках);
         - Создаётся сессия оплаты и сохраняется "payment_url".
@@ -121,23 +121,32 @@ class PaymentsListCreateAPIView(generics.ListCreateAPIView):
         paid_course = serializer.validated_data.get("paid_course")
         paid_lesson = serializer.validated_data.get("paid_lesson")
         payment_amount = serializer.validated_data.get("payment_amount")
+        payment_method = serializer.validated_data.get("payment_method")
 
-        # Интеграция со Stripe
-        if paid_course:
-            product_id = create_stripe_product(paid_course)
-        elif paid_lesson:
-            product_id = create_stripe_product(paid_lesson)
-        price_id = create_stripe_price(product_id, payment_amount)
-        session_id, session_url = create_stripe_session(price_id)
+        # 1) Stripe-интеграция нужна только если указан метод оплаты "=transfer"
+        if payment_method == "transfer":
 
-        # Сохраняю в БД
-        serializer.save(
-            user=user,
-            stripe_product_id=product_id,
-            stripe_price_id=price_id,
-            stripe_session_id=session_id,
-            payment_url=session_url,
-        )
+            # Интеграция со Stripe
+            if paid_course:
+                product_id = create_stripe_product(paid_course)
+            elif paid_lesson:
+                product_id = create_stripe_product(paid_lesson)
+
+            price_id = create_stripe_price(product_id, payment_amount)
+            session_id, session_url = create_stripe_session(price_id)
+
+            # Сохранение результатов в БД
+            serializer.save(
+                user=user,
+                stripe_product_id=product_id,
+                stripe_price_id=price_id,
+                stripe_session_id=session_id,
+                payment_url=session_url,
+            )
+
+        # 2) Без интеграции со Stripe если указан метод оплаты "=cash"
+        else:
+            serializer.save(user=user)
 
 
 class PaymentsRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):

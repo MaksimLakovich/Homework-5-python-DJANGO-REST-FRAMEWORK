@@ -11,17 +11,33 @@ class PaymentsSerializer(serializers.ModelSerializer):
     десериализации."""
 
     def validate(self, data):
-        """Валидация данных для лучшего API-обслуживания - это ранняя валидация еще в сериализаторе поэтому из
-        контроллера PaymentsListCreateAPIView() я перенес сюда эти проверки.
+        """Валидация логики полей платежа: тип оплаты и выбор продукта (курс или урок).
+        Это так называемая ранняя валидация еще в сериализаторе поэтому из контроллера PaymentsListCreateAPIView()
+        я перенес сюда эти проверки.
         Обоснование:
-        - Если ошибка есть в теле запроса - то лучше её находить на уровне сериализатора, а не контроллера.
-        - Так клиент (например, Postman или frontend) сразу получит 400 с объяснением, без лишней логики
+        - если ошибка есть в теле запроса - то лучше ее находить на уровне сериализатора, а не контроллера.
+        - так клиент (например, Postman или frontend) сразу получит 400 с объяснением, без лишней логики
         и без лишнего обращения к Stripe.
         :param data: Входные данные запроса для валидации (словарь validated_data).
         :return data: Валидированные данные (data), если нет ошибок.
         """
         paid_lesson = data.get("paid_lesson")
         paid_course = data.get("paid_course")
+        payment_method = data.get("payment_method")
+
+        # Payments.METHOD - это список кортежей, например:
+        #     [
+        #         ("transfer", "Перевод на счет"),
+        #         ("cash", "Наличные"),
+        #     ]
+        # 1) Значит, чтобы сравнивать с ключами ("cash", "transfer") из тела post-запроса, нужно извлечь только
+        # первые элементы кортежей.
+        # 2) dict(Payments.METHOD) вернёт {"transfer": "Перевод на счет", "cash": "Наличные"}, тогда
+        # оператор NOT IN будет проверять по ключам.
+        if payment_method not in dict(Payments.METHOD):
+            raise serializers.ValidationError(
+                "Платеж может быть только в наличной форме (cash) или переводом на счет (transfer)."
+            )
 
         if paid_course and paid_lesson:
             raise serializers.ValidationError(
