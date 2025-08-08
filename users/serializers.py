@@ -10,6 +10,31 @@ class PaymentsSerializer(serializers.ModelSerializer):
     основе модели Payments. Описывает то, какие поля модели Payments будут участвовать в сериализации и
     десериализации."""
 
+    def validate(self, data):
+        """Валидация данных для лучшего API-обслуживания - это ранняя валидация еще в сериализаторе поэтому из
+        контроллера PaymentsListCreateAPIView() я перенес сюда эти проверки.
+        Обоснование:
+        - Если ошибка есть в теле запроса - то лучше её находить на уровне сериализатора, а не контроллера.
+        - Так клиент (например, Postman или frontend) сразу получит 400 с объяснением, без лишней логики
+        и без лишнего обращения к Stripe.
+        :param data: Входные данные запроса для валидации (словарь validated_data).
+        :return data: Валидированные данные (data), если нет ошибок.
+        """
+        paid_lesson = data.get("paid_lesson")
+        paid_course = data.get("paid_course")
+
+        if paid_course and paid_lesson:
+            raise serializers.ValidationError(
+                "Нельзя одновременно указать и Курс, и Урок. Выберите что-то одно."
+            )
+
+        if not paid_course and not paid_lesson:
+            raise serializers.ValidationError(
+                "Необходимо указать либо Курс, либо Урок."
+            )
+
+        return data
+
     class Meta:
         model = Payments
         fields = "__all__"
@@ -24,7 +49,6 @@ class PaymentsSerializer(serializers.ModelSerializer):
             "user",
             "payment_date",
         )
-
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -82,9 +106,7 @@ class CustomObtainPairSerializer(TokenObtainPairSerializer):
 
         if email and password:  # ШАГ 1: проверяю все ли данные есть
             try:  # ШАГ 2: Ищу пользователя с таким email
-                user = CustomUser.objects.get(
-                    email=email
-                )
+                user = CustomUser.objects.get(email=email)
             except CustomUser.DoesNotExist:
                 raise AuthenticationFailed("Пользователь с таким email не найден.")
 

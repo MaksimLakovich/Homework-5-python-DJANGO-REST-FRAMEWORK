@@ -1,5 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, serializers
+from rest_framework import generics
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -122,19 +122,11 @@ class PaymentsListCreateAPIView(generics.ListCreateAPIView):
         paid_lesson = serializer.validated_data.get("paid_lesson")
         payment_amount = serializer.validated_data.get("payment_amount")
 
-        if paid_lesson and paid_course:
-            raise serializers.ValidationError(
-                "Одним платежом можно оплатить либо отдельный Урок (тогда не указываем paid_course) "
-                "или весь Курс целиком (не указываем paid_lesson)."
-            )
-
         # Интеграция со Stripe
         if paid_course:
             product_id = create_stripe_product(paid_course)
         elif paid_lesson:
             product_id = create_stripe_product(paid_lesson)
-        else:
-            raise serializers.ValidationError("Не указан оплачиваемый Курс или Урок.")
         price_id = create_stripe_price(product_id, payment_amount)
         session_id, session_url = create_stripe_session(price_id)
 
