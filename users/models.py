@@ -107,6 +107,12 @@ class Payments(models.Model):
         verbose_name="Метод платежа:",
         help_text="Укажите метод платежа",
     )
+    payment_status = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name="Статус платежа:",
+    )
     stripe_product_id = models.CharField(
         max_length=255,
         blank=True,

@@ -1,7 +1,11 @@
 from django_filters.rest_framework import DjangoFilterBackend
+
 from rest_framework import generics
+from rest_framework import status as drf_status
+from rest_framework.views import APIView
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from users.models import CustomUser, Payments
@@ -14,6 +18,7 @@ from users.services import (
     create_stripe_price,
     create_stripe_product,
     create_stripe_session,
+    get_stripe_payment_status,
 )
 
 
@@ -154,3 +159,29 @@ class PaymentsRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView
 
     queryset = Payments.objects.all()
     serializer_class = PaymentsSerializer
+
+
+class StripePaymentStatusAPIView(APIView):
+    """Проверка статуса оплаты по session_id (или payment_id)."""
+
+    def get(self, request, pk):
+        """Возвращает статус платежа из Stripe."""
+        try:
+            payment = Payments.objects.get(pk=pk, user=request.user)
+            if not payment.stripe_session_id:
+                return Response({"detail": "Платёж не связан с Stripe-сессией."}, status=400)
+
+            # Получаю статус из Stripe
+            payment_status = get_stripe_payment_status(payment.stripe_session_id)
+
+            # Обновляю в БД статус (опционально)
+            payment.payment_status = payment_status
+            payment.save(update_fields=["payment_status"])
+
+            return Response({"payment_status": payment_status})
+
+        except Payments.DoesNotExist:
+            return Response({"detail": "Платёж не найден."}, status=404)
+
+        except Exception as e:
+            return Response({"detail": str(e)}, status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR)

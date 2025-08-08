@@ -69,11 +69,13 @@ class PaymentsAdmin(admin.ModelAdmin):
         "paid_lesson",
         "payment_amount",
         "payment_method",
+        "payment_status",
     )
     # *readonly_fields* для Stripe-полей это важный момент, потому что эти поля должны быть недоступны для ручного
     # редактирования. Админ сможет видеть эти поля, но не сможет их редактировать вручную.
     readonly_fields = (
         "payment_date",
+        "payment_status",
         "stripe_product_id",
         "stripe_price_id",
         "stripe_session_id",

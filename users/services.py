@@ -74,3 +74,16 @@ def create_stripe_session(price_id):
         return session.id, session.url
     except stripe.error.StripeError as e:
         raise Exception(f"Ошибка при создании сессии в Stripe: {e.user_message}")
+
+
+def get_stripe_payment_status(session_id):
+    """Получение статуса оплаты по session_id из Stripe.
+
+    :param session_id: ID сессии оплаты в Stripe.
+    :return: Строка со статусом оплаты (например, 'paid', 'unpaid' и т.д.).
+    """
+    try:
+        session = stripe.checkout.Session.retrieve(session_id)
+        return session.payment_status
+    except stripe.error.StripeError as e:
+        raise Exception(f"Ошибка при проверке статуса в Stripe: {e.user_message}")
