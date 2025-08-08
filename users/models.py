@@ -52,7 +52,7 @@ class CustomUser(AbstractUser):
 
 
 class Payments(models.Model):
-    """Модель Payments представляет платежи за Lesson и/или за Course на платформе для онлайн-обучения."""
+    """Модель Payments представляет платежи за продукты (Lesson / Course) на платформе для онлайн-обучения."""
 
     METHOD = [
         ("transfer", "Перевод на счет"),
@@ -61,14 +61,18 @@ class Payments(models.Model):
 
     user = models.ForeignKey(
         to=CustomUser,
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
+        on_delete=models.SET_NULL,  # SET_NULL нужен, чтоб сохранить платеж даже если пользователь удалится в будущем
+        blank=True,  # обязательно, иначе SET_NULL не сработает
+        null=True,  # обязательно, иначе SET_NULL не сработает
         related_name="payments",
         verbose_name="Пользователь:",
         help_text="Укажите пользователя",
     )
     payment_date = models.DateTimeField(
+        # auto_now_add:
+        # - Django автоматически заполняет поле один раз при создании объекта;
+        # - поле становится read-only (только для чтения) - нельзя редактировать его вручную даже под Админом;
+        # - Django не включает такие поля в форму в админке по умолчанию.
         auto_now_add=True,
         verbose_name="Дата и время оплаты:",
         help_text="Укажите дату и время оплаты",
