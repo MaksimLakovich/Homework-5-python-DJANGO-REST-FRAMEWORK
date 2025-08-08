@@ -1,5 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics
+from rest_framework import generics, serializers
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -9,6 +9,11 @@ from users.serializers import (
     CustomObtainPairSerializer,
     CustomUserSerializer,
     PaymentsSerializer,
+)
+from users.services import (
+    create_stripe_price,
+    create_stripe_product,
+    create_stripe_session,
 )
 
 
@@ -53,9 +58,12 @@ class CustomUserRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
         Доступно:
         1) Просматривать (GET) может любой авторизованный пользователь.
         2) Редактировать (PUT, PATCH) может только владелец профиля.
-        Если пользователь пытается изменить чужой профиль, то вызывается отказ в доступе (HTTP 403)."""
+        Если пользователь пытается изменить чужой профиль, то вызывается отказ в доступе (HTTP 403).
+        """
         if request.method in ["PUT", "PATCH"] and request.user != obj:
-            self.permission_denied(request, message="Можно редактировать только свой профиль.")
+            self.permission_denied(
+                request, message="Можно редактировать только свой профиль."
+            )
         return super().check_object_permissions(request, obj)
 
 
@@ -74,17 +82,70 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
 
 class PaymentsListCreateAPIView(generics.ListCreateAPIView):
-    """Класс-контроллер на основе базового Generic-класса для получения списка платежей и создания нового платежа."""
+    """Класс-контроллер на основе базового Generic-класса для получения списка платежей и создания нового платежа:
+        - GET: Возвращает список всех платежей пользователя.
+        - POST: Создаёт платёж на продукт (Course или Lesson) и генерирует ссылку на оплату через Stripe.
+    Важно:
+    - Поля Stripe ("stripe_product_id", "stripe_price_id", "stripe_session_id", "payment_url") заполняются автоматом.
+    - Пользователь подставляется из "request.user".
+    """
 
     queryset = Payments.objects.all()
     serializer_class = PaymentsSerializer
 
     # Бэкенд для обработки фильтра:
-    filter_backends = [DjangoFilterBackend, OrderingFilter,]
+    filter_backends = [
+        DjangoFilterBackend,
+        OrderingFilter,
+    ]
     # Фильтрация по курсу, уроку и оплате:
-    filterset_fields = ("paid_course", "paid_lesson", "payment_method",)
+    filterset_fields = (
+        "paid_course",
+        "paid_lesson",
+        "payment_method",
+    )
     # Сортировка по дате оплаты
     ordering_fields = ["payment_date"]
+
+    def get_queryset(self):
+        """Метод ограничивает список платежей только платежами текущего пользователя при выполнении GET-запроса."""
+        return Payments.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        """Переопределяю метод для создания платежа с интеграцией к платёжной системе Stripe.
+        - Создаётся продукт в Stripe (по .title в объекте продукта);
+        - Создаётся цена (в копейках);
+        - Создаётся сессия оплаты и сохраняется "payment_url".
+        - Все поля Stripe сохраняются в объект Payments."""
+        user = self.request.user
+        paid_course = serializer.validated_data.get("paid_course")
+        paid_lesson = serializer.validated_data.get("paid_lesson")
+        payment_amount = serializer.validated_data.get("payment_amount")
+
+        if paid_lesson and paid_course:
+            raise serializers.ValidationError(
+                "Одним платежом можно оплатить либо отдельный Урок (тогда не указываем paid_course) "
+                "или весь Курс целиком (не указываем paid_lesson)."
+            )
+
+        # Интеграция со Stripe
+        if paid_course:
+            product_id = create_stripe_product(paid_course)
+        elif paid_lesson:
+            product_id = create_stripe_product(paid_lesson)
+        else:
+            raise serializers.ValidationError("Не указан оплачиваемый Курс или Урок.")
+        price_id = create_stripe_price(product_id, payment_amount)
+        session_id, session_url = create_stripe_session(price_id)
+
+        # Сохраняю в БД
+        serializer.save(
+            user=user,
+            stripe_product_id=product_id,
+            stripe_price_id=price_id,
+            stripe_session_id=session_id,
+            payment_url=session_url,
+        )
 
 
 class PaymentsRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):

@@ -5,24 +5,31 @@ from django.conf import settings
 stripe.api_key = settings.SECRET_KEY_FOR_STRIPE
 
 
-def create_product_course(paid_course):
-    """Создание продукта (курс) в платежной системе Stripe.
+def create_stripe_product(paid_product):
+    """Создание продукта по объекту модели (Course или Lesson) в платежной системе Stripe.
 
-    :param paid_course: Это объект модели Course, а Stripe_API ожидает:
-    1) строку (str), чаще всего это название продукта (name), поэтому указываю "paid_course.title".
-    2) или словарь (dict), если передаем product_data.
+    :param paid_product: Это экземпляр модели (например, Course или Lesson), а Stripe_API ожидает:
+        1) строку (str), чаще всего это название продукта (name), поэтому указываю "paid_product.title".
+        2) или словарь (dict), если передаем product_data.
     :return: Для дальнейшего процесса формирования оплаты в return хватит одного product.id, если не нужны другие
     данные из ответа Stripe. Но, если нужно будет хранить в БД что-то ещё (например, product.url, product.name и т.д.),
     то нужно возвращать весь объект.
     """
+    # Не обязательно, но лучшие практики рекомендуют делать проверку атрибутов на их наличие (микробезопасность):
+    # Чтобы код был защищённым от случайных вызовов, можно добавить проверку, что объект действительно имеет .title:
+    if not hasattr(paid_product, "title"):
+        raise ValueError(
+            "Объект должен иметь атрибут 'title' для создания продукта в Stripe"
+        )
+
     try:
-        product = stripe.Product.create(name=paid_course.title)
+        product = stripe.Product.create(name=paid_product.title)
         return product.id
     except stripe.error.StripeError as e:
         raise Exception(f"Ошибка при создании продукта в Stripe: {e.user_message}")
 
 
-def create_price(product_id, payment_amount):
+def create_stripe_price(product_id, payment_amount):
     """Создание цены продукта в платежной системе Stripe.
     Достаточно в функцию передать только product_id и payment_amount.
 
@@ -46,9 +53,10 @@ def create_price(product_id, payment_amount):
         raise Exception(f"Ошибка при создании цены в Stripe: {e.user_message}")
 
 
-def create_session(price_id):
+def create_stripe_session(price_id):
     """Создание сессии для получения ссылки на оплату продукта.
-    Достаточно в функцию передать только price_id, а остальное можно захардкодить (quantity=1 и т.д.).
+    Достаточно в функцию передать только price_id, а остальное можно захардкодить (quantity=1 и т.д.) и потом изменить,
+    когда появится у Пользователя возможность выбора количества оплачиваемых продуктов.
 
     :param price_id: ID цены из Stripe (строка).
     :return session.url, session.id: Для дальнейшего процесса формирования оплаты в return хватит session.id
