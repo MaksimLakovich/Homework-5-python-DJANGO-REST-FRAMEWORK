@@ -10,9 +10,62 @@ class PaymentsSerializer(serializers.ModelSerializer):
     основе модели Payments. Описывает то, какие поля модели Payments будут участвовать в сериализации и
     десериализации."""
 
+    def validate(self, data):
+        """Валидация логики полей платежа: тип оплаты и выбор продукта (курс или урок).
+        Это так называемая ранняя валидация еще в сериализаторе поэтому из контроллера PaymentsListCreateAPIView()
+        я перенес сюда эти проверки.
+        Обоснование:
+        - если ошибка есть в теле запроса - то лучше ее находить на уровне сериализатора, а не контроллера.
+        - так клиент (например, Postman или frontend) сразу получит 400 с объяснением, без лишней логики
+        и без лишнего обращения к Stripe.
+        :param data: Входные данные запроса для валидации (словарь validated_data).
+        :return data: Валидированные данные (data), если нет ошибок.
+        """
+        paid_lesson = data.get("paid_lesson")
+        paid_course = data.get("paid_course")
+        payment_method = data.get("payment_method")
+
+        # Payments.METHOD - это список кортежей, например:
+        #     [
+        #         ("transfer", "Перевод на счет"),
+        #         ("cash", "Наличные"),
+        #     ]
+        # 1) Значит, чтобы сравнивать с ключами ("cash", "transfer") из тела post-запроса, нужно извлечь только
+        # первые элементы кортежей.
+        # 2) dict(Payments.METHOD) вернёт {"transfer": "Перевод на счет", "cash": "Наличные"}, тогда
+        # оператор NOT IN будет проверять по ключам.
+        if payment_method not in dict(Payments.METHOD):
+            raise serializers.ValidationError(
+                "Платеж может быть только в наличной форме (cash) или переводом на счет (transfer)."
+            )
+
+        if paid_course and paid_lesson:
+            raise serializers.ValidationError(
+                "Нельзя одновременно указать и Курс, и Урок. Выберите что-то одно."
+            )
+
+        if not paid_course and not paid_lesson:
+            raise serializers.ValidationError(
+                "Необходимо указать либо Курс, либо Урок."
+            )
+
+        return data
+
     class Meta:
         model = Payments
         fields = "__all__"
+        # 1) Нельзя позволять клиенту вручную указывать stripe_product_id, stripe_price_id, stripe_session_id,
+        # payment_url и payment_status при создании платежа (эти поля должны быть read-only).
+        # 2) Аналогично и user тоже должен задаваться только из request.user, а не из данных клиента
+        read_only_fields = (
+            "stripe_product_id",
+            "stripe_price_id",
+            "stripe_session_id",
+            "payment_url",
+            "user",
+            "payment_date",
+            "payment_status",
+        )
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -29,12 +82,14 @@ class CustomUserSerializer(serializers.ModelSerializer):
             - last_name (фамилия)
             - payments (история платежей)
             - password (в любом случае не нужен в ответе)
-        Используется для динамической настройки отображения данных в зависимости от прав доступа."""
+        Используется для динамической настройки отображения данных в зависимости от прав доступа.
+        """
 
         representation = super().to_representation(instance)
 
         request = self.context.get("request")
-        if request and request.user != instance:  #Значит пользователь смотрит чужой профиль и нужно скрыть часть полей
+        # "request.user != instance" - значит пользователь смотрит чужой профиль и нужно скрыть часть полей
+        if request and request.user != instance:
             representation.pop("last_name", None)
             representation.pop("payments", None)
             representation.pop("password", None)
@@ -67,8 +122,8 @@ class CustomObtainPairSerializer(TokenObtainPairSerializer):
         password = attrs.get("password")
 
         if email and password:  # ШАГ 1: проверяю все ли данные есть
-            try:
-                user = CustomUser.objects.get(email=email)  # ШАГ 2: Ищу пользователя с таким email
+            try:  # ШАГ 2: Ищу пользователя с таким email
+                user = CustomUser.objects.get(email=email)
             except CustomUser.DoesNotExist:
                 raise AuthenticationFailed("Пользователь с таким email не найден.")
 
@@ -79,10 +134,12 @@ class CustomObtainPairSerializer(TokenObtainPairSerializer):
             raise AuthenticationFailed("Необходимо указать email и пароль.")
 
         # ШАГ 4: Если все ок, то формирую словарь, чтобы передать в родительский "validate()"
-        data = super().validate({
-            self.username_field: user.email,  # Ключ "email", значение - email пользователя
-            "password": password
-        })
+        data = super().validate(
+            {
+                self.username_field: user.email,  # Ключ "email", значение - email пользователя
+                "password": password,
+            }
+        )
         # ШАГ 5: Добавляю еще данные в ответ (опционально, это полезно для будущего функционала)
         data["email"] = user.email
         data["user_id"] = user.id
