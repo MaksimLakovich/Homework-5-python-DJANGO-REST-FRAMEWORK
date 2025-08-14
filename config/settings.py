@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     # Приложения проекта
     'users',
     'lms_system',
+    # Добавляем celery beat для работы с периодическими задачами
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
