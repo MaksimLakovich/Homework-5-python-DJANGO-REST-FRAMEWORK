@@ -419,6 +419,12 @@ DATABASE_PORT=
 
 # Секретный ключ для платежного сервиса Stripe
 SECRET_KEY_FOR_STRIPE=secret_key_here
+
+# URL-адрес брокера сообщений (Redis)
+CELERY_BROKER_URL=
+
+# URL-адрес брокера результатов - хранилище результатов выполнения задаx (использую тот же Redis)
+CELERY_RESULT_BACKEND=
 ```
 
 

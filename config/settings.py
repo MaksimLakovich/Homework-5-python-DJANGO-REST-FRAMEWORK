@@ -138,14 +138,14 @@ SECRET_KEY_FOR_STRIPE = os.getenv('SECRET_KEY_FOR_STRIPE')
 # URL-адрес брокера сообщений. Например, Redis, который по умолчанию работает на порту 6379 — адрес брокера сообщений.
 # Формат: redis://<host>:<port>/<db_number>.
 # /0 и /1 и так далее — разные базы в Redis (например, чтобы задачи Celery и кэш Django не мешали друг другу).
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL')
 
 # URL-адрес брокера результатов — хранилище результатов выполнения задач. Можно использовать тот же Redis,
 # что и для брокера.
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND')
 
 # Часовой пояс для работы Celery — важно для периодических задач, чтобы они выполнялись в правильное время.
-# Пример, CELERY_TIMEZONE = "Australia/Tasmania"
+# Пример, CELERY_TIMEZONE = "Australia/Tasmania", я ссылаюсь на наш TIME_ZONE проекта, чтоб все было в одном поясе
 CELERY_TIMEZONE = TIME_ZONE
 
 # Флаг отслеживания выполнения задач — Celery будет отслеживать состояние "в процессе".
