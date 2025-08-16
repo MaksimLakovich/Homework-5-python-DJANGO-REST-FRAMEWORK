@@ -451,6 +451,10 @@ CELERY_BROKER_URL=
 
 # URL-адрес брокера результатов - хранилище результатов выполнения задаx (использую тот же Redis)
 CELERY_RESULT_BACKEND=
+
+# Настройка SMTP-сервера Яндекса для отправки писем пользователям:
+YANDEX_EMAIL_HOST_USER=
+YANDEX_EMAIL_HOST_PASSWORD=password_here
 ```
 
 
