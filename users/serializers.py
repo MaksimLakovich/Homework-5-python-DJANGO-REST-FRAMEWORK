@@ -75,6 +75,14 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     payments = PaymentsSerializer(many=True, read_only=True)
 
+    def create(self, validated_data):
+        """Переопределяем создание пользователя, чтобы пароль сохранялся БД в хэшированном виде."""
+        password = validated_data.pop("password")
+        user = CustomUser(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user
+
     def to_representation(self, instance):
         """Возвращает сериализованное представление пользователя.
         - Если запрашивающий пользователь смотрит "свой профиль", то отображаются все поля.
