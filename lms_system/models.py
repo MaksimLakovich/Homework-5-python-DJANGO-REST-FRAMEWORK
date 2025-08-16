@@ -1,8 +1,19 @@
 from django.db import models
 
 
-class Course(models.Model):
-    """Модель Course представляет Курс на платформе для онлайн-обучения."""
+class TimeStampedModel(models.Model):
+    """Абстрактная базовая модель для дальнейшего создания *created_at* и *updated_at* во всех моделях приложения."""
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания:",)
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления:",)
+
+    class Meta:
+        abstract = True
+
+
+class Course(TimeStampedModel):
+    """Модель Course представляет Курс на платформе для онлайн-обучения.
+    Наследуется от абстрактной базовой модели TimeStampedModel для добавления created_at и updated_at по умолчанию."""
 
     title = models.CharField(
         max_length=500,
@@ -46,8 +57,9 @@ class Course(models.Model):
         ordering = ["title"]
 
 
-class Lesson(models.Model):
-    """Модель Lesson представляет Урок на платформе для онлайн-обучения."""
+class Lesson(TimeStampedModel):
+    """Модель Lesson представляет Урок на платформе для онлайн-обучения.
+    Наследуется от абстрактной базовой модели TimeStampedModel для добавления created_at и updated_at по умолчанию."""
 
     course = models.ForeignKey(
         to=Course,

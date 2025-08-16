@@ -11,6 +11,8 @@ class CourseAdmin(admin.ModelAdmin):
         "id",
         "title",
         "description",
+        "created_at",
+        "updated_at",
     )
     list_filter = ("title",)
     search_fields = (
@@ -29,6 +31,8 @@ class LessonAdmin(admin.ModelAdmin):
         "title",
         "description",
         "video_url",
+        "created_at",
+        "updated_at",
     )
     list_filter = ("title",)
     search_fields = (
