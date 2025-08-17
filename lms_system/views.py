@@ -67,8 +67,14 @@ class LessonListCreateAPIView(generics.ListCreateAPIView):
         return [permission() for permission in self.permission_classes]
 
     def perform_create(self, serializer):
-        """Присваивает текущего авторизованного пользователя как владельца (owner) создаваемого объекта."""
+        """1) Присваивает текущего авторизованного пользователя как владельца (owner) создаваемого объекта.
+        2) Запуск отложенной задачи по сбору списка подписчиков Курса, куда вошел этот новый Урок и отправка им писем.
+        """
+        # Установка владельца
         serializer.save(owner=self.request.user)
+        # Celery-задача
+        lesson = serializer.save()
+        task_send_course_update_email.delay(lesson.course_id)
 
 
 class LessonRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -91,6 +97,12 @@ class LessonRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
         else:
             self.permission_classes = [IsAuthenticated & IsOwner | IsModerator]
         return [permission() for permission in self.permission_classes]
+
+    def perform_update(self, serializer):
+        """Запуск отложенной задачи по сбору списка подписчиков Курса, куда входит данный обновленный Урок
+        и отправка им писем"""
+        lesson = serializer.save()
+        task_send_course_update_email.delay(lesson.course_id)
 
 
 class SubscriptionToggleAPIView(APIView):
