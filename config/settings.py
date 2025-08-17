@@ -1,6 +1,8 @@
 import os
 from datetime import timedelta
 from pathlib import Path
+
+from celery.schedules import crontab
 from dotenv import load_dotenv
 
 # Загрузка переменных из .env-файла
@@ -165,3 +167,12 @@ EMAIL_USE_SSL = True
 EMAIL_HOST_USER = os.getenv('YANDEX_EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('YANDEX_EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# Настройки для Celery по запуску периодических задач
+CELERY_BEAT_SCHEDULE = {
+    'task-deactivate-inactive-users-every-day': {
+        'task': 'users.tasks.task_deactivate_inactive_users',
+        # 'schedule': timedelta(minutes=3),  # Расписание выполнения задачи (например, каждые 3 минут)
+        'schedule': crontab(hour=0, minute=0),  # Каждый день в полночь
+    },
+}
