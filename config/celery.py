@@ -2,7 +2,7 @@ from __future__ import absolute_import, unicode_literals
 
 import os
 
-from celery import Celery
+from celery import Celery  # type: ignore
 
 # Установка переменной окружения для настроек проекта. Указывает Celery, где искать настройки Django.
 # Без этого Celery не будет знать, какой проект загружать. Вместо "my_project" нужно указать "config".
