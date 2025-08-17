@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from lms_system.models import Course, Lesson, Subscription
 from lms_system.paginators import ListPagination
 from lms_system.serializers import CourseSerializer, LessonSerializer
+from lms_system.tasks import task_send_course_update_email
 from users.permissions import IsModerator, IsOwner
 
 
@@ -40,6 +41,12 @@ class CourseViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Определяет и фиксирует владельцем Пользователя, который создал данный объект."""
         serializer.save(owner=self.request.user)
+
+
+    def perform_update(self, serializer):
+        """При обновлении курса запускает Celery-задачу для уведомления подписчиков."""
+        course = serializer.save()
+        task_send_course_update_email.delay(course.pk)
 
 
 class LessonListCreateAPIView(generics.ListCreateAPIView):

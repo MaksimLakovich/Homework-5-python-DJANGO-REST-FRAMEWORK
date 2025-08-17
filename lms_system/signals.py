@@ -8,8 +8,12 @@ from lms_system.models import Course, Lesson
 @receiver(post_save, sender=Lesson)
 def update_course_timestamp(sender, instance, **kwargs):
     """Сигнал для обновления в объекте Course значения поля *updated_at*, если:
-     1) было выполнено обновление существующего объекта Lesson, который входит в данный Курс.
-     2) или был создан новый объект Lesson, который входит в данный Курс."""
+        1) было выполнено обновление существующего объекта Lesson, который входит в данный Курс.
+        2) или был создан новый объект Lesson, который входит в данный Курс.
+    :param sender: Модель, которая отправила сигнал.
+    :param instance: Конкретный объект Lesson, который был сохранён.
+    :param kwargs: Дополнительные параметры, которые Django передаёт в сигнал (например, created, raw, update_fields).
+    """
     # Это альтернативный вариант вместо "instance.course.save(update_fields=["updated_at"])" - без загрузки
     # объекта Course. Тут мы делаем все одним UPDATE-запросом и вообще не загружаем Course в память.
     # Плюсы: один UPDATE, без SELECT и без вызова save(), а значит не сработают сигналы для Course, если они появятся.
