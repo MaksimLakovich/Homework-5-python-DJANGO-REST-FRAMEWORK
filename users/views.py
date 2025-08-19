@@ -1,6 +1,6 @@
 from django_filters.rest_framework import DjangoFilterBackend
 
-from rest_framework import generics
+from rest_framework import generics, serializers
 from rest_framework import status as drf_status
 from rest_framework.views import APIView
 from rest_framework.filters import OrderingFilter
@@ -136,6 +136,8 @@ class PaymentsListCreateAPIView(generics.ListCreateAPIView):
                 product_id = create_stripe_product(paid_course)
             elif paid_lesson:
                 product_id = create_stripe_product(paid_lesson)
+            else:
+                raise serializers.ValidationError("Не указан оплачиваемый Курс или Урок.")
 
             price_id = create_stripe_price(product_id, payment_amount)
             session_id, session_url = create_stripe_session(price_id)

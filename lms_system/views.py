@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from lms_system.models import Course, Lesson, Subscription
 from lms_system.paginators import ListPagination
 from lms_system.serializers import CourseSerializer, LessonSerializer
+from lms_system.tasks import task_send_course_update_email
 from users.permissions import IsModerator, IsOwner
 
 
@@ -41,6 +42,17 @@ class CourseViewSet(viewsets.ModelViewSet):
         """Определяет и фиксирует владельцем Пользователя, который создал данный объект."""
         serializer.save(owner=self.request.user)
 
+    def perform_update(self, serializer):
+        """При обновлении курса запускает Celery-задачу для уведомления подписчиков с задержкой в 4 часа."""
+        course = serializer.save()
+        # # ВАРИАНТ 1: delay() - это постой вариант для вызова отложенной celery-задачи
+        # task_send_course_update_email.delay(course.pk)
+        # ВАРИАНТ 2: apply_async() - это вариант запуска отложенной celery-задачи с задержкой
+        task_send_course_update_email.apply_async(
+            args=[course.pk],
+            countdown=60 * 60 * 4  # 4 часа
+        )
+
 
 class LessonListCreateAPIView(generics.ListCreateAPIView):
     """Класс-контроллер на основе базового Generic-класса для получения списка уроков и создания нового урока."""
@@ -60,8 +72,20 @@ class LessonListCreateAPIView(generics.ListCreateAPIView):
         return [permission() for permission in self.permission_classes]
 
     def perform_create(self, serializer):
-        """Присваивает текущего авторизованного пользователя как владельца (owner) создаваемого объекта."""
+        """1) Присваивает текущего авторизованного пользователя как владельца (owner) создаваемого объекта.
+        2) Запуск отложенной задачи по сбору списка подписчиков Курса, куда вошел этот новый Урок и
+        отправка им писем с задержкой в 4 часа."""
+        # Установка владельца
         serializer.save(owner=self.request.user)
+        # Celery-задача
+        lesson = serializer.save()
+        # # ВАРИАНТ 1: delay() - это постой вариант для вызова отложенной celery-задачи
+        # task_send_course_update_email.delay(lesson.course_id)
+        # ВАРИАНТ 2: apply_async() - это вариант запуска отложенной celery-задачи с задержкой
+        task_send_course_update_email.apply_async(
+            args=[lesson.course_id],
+            countdown=60 * 60 * 4  # 4 часа
+        )
 
 
 class LessonRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -84,6 +108,18 @@ class LessonRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
         else:
             self.permission_classes = [IsAuthenticated & IsOwner | IsModerator]
         return [permission() for permission in self.permission_classes]
+
+    def perform_update(self, serializer):
+        """Запуск отложенной задачи по сбору списка подписчиков Курса, куда входит данный обновленный Урок
+        и отправка им писем с задержкой в 4 часа."""
+        lesson = serializer.save()
+        # # ВАРИАНТ 1: delay() - это постой вариант для вызова отложенной celery-задачи
+        # task_send_course_update_email.delay(lesson.course_id)
+        # ВАРИАНТ 2: apply_async() - это вариант запуска отложенной celery-задачи с задержкой
+        task_send_course_update_email.apply_async(
+            args=[lesson.course_id],
+            countdown=60 * 60 * 4  # 4 часа
+        )
 
 
 class SubscriptionToggleAPIView(APIView):

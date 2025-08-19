@@ -1,6 +1,8 @@
 import os
 from datetime import timedelta
 from pathlib import Path
+
+from celery.schedules import crontab
 from dotenv import load_dotenv
 
 # Загрузка переменных из .env-файла
@@ -37,6 +39,8 @@ INSTALLED_APPS = [
     # Приложения проекта
     'users',
     'lms_system',
+    # Добавляем celery beat для работы с периодическими задачами
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -133,3 +137,42 @@ SIMPLE_JWT = {
 }
 
 SECRET_KEY_FOR_STRIPE = os.getenv('SECRET_KEY_FOR_STRIPE')
+
+# Настройки для Celery
+# URL-адрес брокера сообщений. Например, Redis, который по умолчанию работает на порту 6379 — адрес брокера сообщений.
+# Формат: redis://<host>:<port>/<db_number>.
+# /0 и /1 и так далее — разные базы в Redis (например, чтобы задачи Celery и кэш Django не мешали друг другу).
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL')
+
+# URL-адрес брокера результатов — хранилище результатов выполнения задач. Можно использовать тот же Redis,
+# что и для брокера.
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND')
+
+# Часовой пояс для работы Celery — важно для периодических задач, чтобы они выполнялись в правильное время.
+# Пример, CELERY_TIMEZONE = "Australia/Tasmania", я ссылаюсь на наш TIME_ZONE проекта, чтоб все было в одном поясе
+CELERY_TIMEZONE = TIME_ZONE
+
+# Флаг отслеживания выполнения задач — Celery будет отслеживать состояние "в процессе".
+CELERY_TASK_TRACK_STARTED = True
+
+# Максимальное время на выполнение задачи
+CELERY_TASK_TIME_LIMIT = 30 * 60
+
+# Подключение почтового сервера в Django
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.yandex.ru'
+EMAIL_PORT = 465
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = os.getenv('YANDEX_EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('YANDEX_EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# Настройки для Celery по запуску периодических задач
+CELERY_BEAT_SCHEDULE = {
+    'task-deactivate-inactive-users-every-day': {
+        'task': 'users.tasks.task_deactivate_inactive_users',
+        # 'schedule': timedelta(minutes=3),  # Расписание выполнения задачи (например, каждые 3 минут)
+        'schedule': crontab(hour=0, minute=0),  # Каждый день в полночь
+    },
+}
