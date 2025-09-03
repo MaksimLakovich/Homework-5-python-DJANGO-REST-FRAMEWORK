@@ -3,13 +3,17 @@ FROM python:3.12-slim
 
 # Классический паттерн установки системных зависимостей:
 # 1) apt-get update → обновляет список пакетов (как apt update в Ubuntu).
-# 2) apt-get install -y ... → устанавливает системные пакеты (-y == отвечать "ДА" на всё).
+# 2) apt-get install -y ... → устанавливает системные пакеты (-y == отвечать "ДА" на всё):
+# build-essential - компилятор C (для установки некоторых пакетов).
+# libpq-dev - заголовки и библиотеки PostgreSQL (нужны psycopg2)
+# libjpeg-dev - для pillow (работа с изображениями)
+# zlib1g-dev - для pillow (PNG/JPEG и т.п.)
 # 3) rm -rf /var/lib/apt/lists/* → чистим кэш apt, иначе образ будет на сотни МБ тяжелее.
 RUN apt-get update && apt-get install -y \
-    build-essential \        # компилятор
-    libpq-dev \              # заголовки и библиотеки PostgreSQL (нужны psycopg2)
-    libjpeg-dev \            # для pillow (работа с изображениями)
-    zlib1g-dev               # для pillow (PNG/JPEG и т.п.)
+    build-essential \
+    libpq-dev \
+    libjpeg-dev \
+    zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Рабочая директория внутри контейнера
