@@ -17,10 +17,10 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Рабочая директория внутри контейнера
-WORKDIR /lms_system
+WORKDIR /lms_system_project
 
 # Копируем pyproject.toml и poetry.lock (чтобы зависимости кэшировались)
-COPY pyproject.toml poetry.lock* /lms_system/
+COPY pyproject.toml poetry.lock* /lms_system_project/
 
 # Устанавливаем Poetry и зависимости проекта
 # 1) pip install --upgrade pip → в slim-образах Python стоит старый pip, а Poetry под капотом использует pip.
@@ -35,7 +35,7 @@ RUN pip install --upgrade pip && pip install poetry && \
     poetry install --no-root --only main
 
 # Копируем всё содержимое проекта в контейнер
-COPY . /lms_system
+COPY . /lms_system_project
 
 # Открываем порт для приложения
 EXPOSE 8000
