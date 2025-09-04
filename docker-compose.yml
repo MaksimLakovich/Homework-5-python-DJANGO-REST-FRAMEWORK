@@ -1,0 +1,83 @@
+# Указываем версию формата файла docker-compose, а не версию Python.
+# Она определяет какие возможности YAML доступны (например, поддержка depends_on, healthcheck, profiles и т.д.).
+# Версия 3.9 - наиболее стабильная версия схемы Compose.
+# Сейчас вообще можно не указывать version, потому что новый Docker Compose (v2) сам подбирает нужный формат.
+version: "3.9"
+
+# Описываем сервисы (контейнеры), которые нужны для проекта. Список сервисов = контейнеров (каждый блок под ним = отдельный контейнер).
+services:
+
+  # Django-приложение
+  web:
+    build: .                          # Собираем образ из Dockerfile в корне проекта. Можно вместо этой строки указать "image: lms_system_project" (использовать уже готовый образ, который ранее собрали руками с помощью "docker build -t my-django-app ."). Или можно как тут указать build: . (тогда compose сам вызовет docker build и соберёт образ по твоему Dockerfile).
+    container_name: lms_web           # Имя контейнера (для удобства)
+    command: python manage.py runserver 0.0.0.0:8000  # Запуск Django сервера
+    volumes:
+      - .:/lms_system_project                 # Монтируем локальный проект внутрь контейнера
+      - media_data:/lms_system_project/media  # Отдельный том для медиафайлов (чтобы они не терялись при пересборке)
+    ports:
+      - "8000:8000"                   # Пробрасываем порт (localhost:8000 → контейнер:8000)
+    env_file:
+      - .env.docker                   # Загружаем переменные окружения из .env.docker (.env используется для локального запуска - специально разделил)
+
+    depends_on:
+      - db                            # Запускаем только после старта Postgres
+      - redis                         # И после Redis
+    restart: always                   # Перезапускаем контейнер если упал
+
+  # PostgreSQL база данных
+  db:
+    image: postgres:16                # Используем готовый официальный образ Postgres
+    container_name: lms_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Данные хранятся в отдельном томе
+    env_file:
+      - .env.docker                   # Подтягиваем переменные окружения из .env.docker (.env используется для локального запуска - специально разделил)
+    environment:                      # Можно дополнительно задать явно (перестраховка)
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - "5432:5432"                   # Делаем доступным Postgres на localhost:5432
+    restart: always
+
+  # Redis (для Celery брокера)
+  redis:
+    image: redis:7                    # Берём официальный Redis
+    container_name: lms_redis
+    ports:
+      - "6379:6379"                   # Открываем порт (для дебага)
+    restart: always
+
+  # Celery worker (обрабатывает задачи)
+  celery:
+    build: .                          # Использует тот же образ, что и web
+    container_name: lms_celery
+    command: celery -A config worker -l info
+    volumes:
+      - .:/lms_system_project
+    env_file:
+      - .env.docker                   # Подтягиваем переменные окружения из .env.docker (.env используется для локального запуска - специально разделил)
+    depends_on:
+      - db
+      - redis
+    restart: always
+
+  # Celery beat (планировщик периодических задач)
+  celery_beat:
+    build: .
+    container_name: lms_celery_beat
+    command: celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - .:/lms_system_project
+    env_file:
+      - .env.docker                   # Подтягиваем переменные окружения из .env.docker (.env используется для локального запуска - специально разделил)
+    depends_on:
+      - db
+      - redis
+    restart: always
+
+# Определяем именованные тома (для хранения данных вне контейнера)
+volumes:
+  postgres_data:    # для БД Postgres
+  media_data:       # для медиафайлов Django
