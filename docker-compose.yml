@@ -38,7 +38,7 @@ services:
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
     ports:
-      - "5432:5432"                   # Делаем доступным Postgres на localhost:5432
+      - "5433:5432"                   # Делаем доступным Postgres на localhost:5432
     restart: always
 
   # Redis (для Celery брокера)
@@ -46,7 +46,7 @@ services:
     image: redis:7                    # Берём официальный Redis
     container_name: lms_redis
     ports:
-      - "6379:6379"                   # Открываем порт (для дебага)
+      - "6380:6379"                   # Открываем порт (для дебага)
     restart: always
 
   # Celery worker (обрабатывает задачи)

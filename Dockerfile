@@ -30,9 +30,11 @@ COPY pyproject.toml poetry.lock* /lms_system_project/
 #    потому что в Docker у нас и так изоляция (каждый контейнер = отдельное окружение).
 # 4) poetry install --no-root --only main → ставим только основные зависимости (без dev-зависимостей).
 #    Пример: ставим Django, DRF, Celery, psycopg2, но НЕ ставим pytest, flake8, black и т.п.
+#    Если убрать флаг "--only main" то будет ставиться все и контейнер будет чуть-чуть тяжелее.
 RUN pip install --upgrade pip && pip install poetry && \
     poetry config virtualenvs.create false && \
-    poetry install --no-root --only main
+    poetry install --no-root
+
 
 # Копируем всё содержимое проекта в контейнер
 COPY . /lms_system_project

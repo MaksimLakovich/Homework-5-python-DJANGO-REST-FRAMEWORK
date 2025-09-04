@@ -583,15 +583,22 @@ ignore_missing_imports = True
 # <a id="title21">21. Запуск проекта через Docker Compose</a>
 1. Создайте файл `.env.docker` в корне проекта из копии подготовленного файла `.env.docker.example` (это шаблон с нужными переменными окружения) и заполните его.
 2. Соберите и запустите проект:
-   ```bash
-   docker-compose up --build
-   ```
-3. Откройте приложение:
+    ```bash
+    docker-compose up --build
+    ```
+3. Запустите миграции внутри контейнера web. Это создаст все таблицы (django_session, auth_user, твои users_customuser, lms_system_course, и т.д.):
+    ```bash
+    docker-compose exec web python manage.py migrate
+    ```
+4. Создай суперпользователя (укажите логин/почту/пароль):
+    ```bash
+    docker-compose exec web python manage.py createsuperuser
+    ```
+5. Откройте приложение:
    - Django: http://localhost:8000
-   - Postgres: localhost:5432
-   - Redis: localhost:6379
-4. Проверка сервисов:
+   - Postgres: localhost:5433
+   - Redis: localhost:6380
+6. Проверка сервисов:
    - Django: `docker logs lms_web`
    - Celery: `docker logs lms_celery`
    - Beat: `docker logs lms_celery_beat`
-
