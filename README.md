@@ -529,7 +529,7 @@ YANDEX_EMAIL_HOST_PASSWORD=password_here
 [flake8]
 max-line-length = 119
 ignore = E203, W503
-exclude = .git, __pycache__, venv, .venv
+exclude = .git, __pycache__, venv, .venv, */migrations/*,
 ```
 
 
