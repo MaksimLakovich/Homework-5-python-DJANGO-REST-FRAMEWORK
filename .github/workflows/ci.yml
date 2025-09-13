@@ -101,7 +101,8 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
             # Создаем директорию, если её ещё нет
-            mkdir -p /var/www/lms_system
+            sudo mkdir -p /var/www/lms_system
+            sudo chown -R maksim:maksim /var/www/lms_system
             cd /var/www/lms_system
       
             # Если проект не склонирован, то клонируем
@@ -120,7 +121,7 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
   
-            # Тянем новый образ web (который собрал и запушил CI)
+            # Подтягиваем новый образ web (который собрал и запушил CI)
             docker compose pull web
   
             # Перезапускаем только web-контейнер с новым образом
