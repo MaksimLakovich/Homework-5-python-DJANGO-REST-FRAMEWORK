@@ -21,7 +21,8 @@
 [18. Описание файла mypy.ini](#title18) / 
 [19. Документация к API](#title19) / 
 [20. Локальная установка проекта](#title20) / 
-[21. Запуск через Docker Compose](#title21) / 
+[21. Установка и запуск проекта на сервере (через Docker и Nginx)](#title21) / 
+[22. Автоматический деплой через GitHub Actions](#title22) /
 
 
 
@@ -500,10 +501,17 @@ SECRET_KEY_FOR_PROJECT=secret_key_here
 # Настройки дебага. В settings.py дебаг должен быть описан так: DEBUG = True if os.getenv('DEBUG') == 'True' else False
 DEBUG=
 
-# Настройки БД проекта django в config/settings.py
-DATABASE_NAME=
-DATABASE_USER=
-DATABASE_PASSWORD=
+# Настройки БД (ВАЖНО!!! В Docker DATABASE_HOST = db)
+# Название базы для приложения:
+# 1) Postgres (для контейнера db)
+POSTGRES_DB=
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+
+# 2) Django (чтобы settings.py подхватывал те же значения)
+DATABASE_NAME="${POSTGRES_DB}"
+DATABASE_USER="${POSTGRES_USER}"
+DATABASE_PASSWORD="${POSTGRES_PASSWORD}"
 DATABASE_HOST=db
 DATABASE_PORT=
 
@@ -519,6 +527,9 @@ CELERY_RESULT_BACKEND=redis://redis:6379/0
 # Настройка SMTP-сервера Яндекса для отправки писем пользователям:
 YANDEX_EMAIL_HOST_USER=
 YANDEX_EMAIL_HOST_PASSWORD=password_here
+
+# Имя пользователя DockerHub с которым связан наш репозитория проекта на GitHub через настройки секретного ключа там
+DOCKER_HUB_USERNAME=
 ```
 
 
@@ -568,11 +579,11 @@ ignore_missing_imports = True
 
 # <a id="title20">20. Локальная установка проекта</a>
 1. Клонируйте репозиторий:
-   ```
+   ```commandline
    git clone https://github.com/MaksimLakovich/Homework-5-python-DJANGO-REST-FRAMEWORK.git
    ```
 2. Установите зависимости:
-   ```
+   ```commandline
    poetry install
    ```
 3. Заполните файл `.env` по примеру `.env.example`
@@ -580,25 +591,55 @@ ignore_missing_imports = True
 
 
 
-# <a id="title21">21. Запуск проекта через Docker Compose</a>
-1. Создайте файл `.env.docker` в корне проекта из копии подготовленного файла `.env.docker.example` (это шаблон с нужными переменными окружения) и заполните его.
-2. Соберите и запустите проект:
-    ```bash
-    docker-compose up --build
+# <a id="title21">21. Установка и запуск проекта на сервере (через Docker и Nginx)</a>
+
+1. Клонируйте репозиторий:
+    ```commandline
+    git clone https://github.com/MaksimLakovich/Homework-5-python-DJANGO-REST-FRAMEWORK.git
+    cd Homework-5-python-DJANGO-REST-FRAMEWORK.git
     ```
-3. Запустите миграции внутри контейнера web. Это создаст все таблицы (django_session, auth_user, твои users_customuser, lms_system_course, и т.д.):
-    ```bash
+
+2. Создайте файл окружения ***.env.docker*** (на основе примера *.env.docker.example*) и заполните его реальными данными:
+    ```commandline
+    cp .env.docker.example .env.docker
+    nano .env.docker
+    ```
+   
+3. Соберите и запустите контейнеры:
+    ```commandline
+    docker-compose up -d --build
+    ```
+   
+4. Выполните миграции и соберите статику (если они ещё не применялись):
+    ```commandline
     docker-compose exec web python manage.py migrate
+    docker-compose exec web python manage.py collectstatic --noinput
     ```
-4. Создай суперпользователя (укажите логин/почту/пароль):
-    ```bash
-    docker-compose exec web python manage.py createsuperuser
-    ```
-5. Откройте приложение:
-   - Django: http://localhost:8000
-   - Postgres: localhost:5433
-   - Redis: localhost:6380
-6. Проверка сервисов:
-   - Django: `docker logs lms_web`
-   - Celery: `docker logs lms_celery`
-   - Beat: `docker logs lms_celery_beat`
+   
+5. После успешного запуска приложение будет доступно по IP-адресу вашей ВМ на порту 80: `http://<ваш-ip>`
+
+
+
+
+# <a id="title22">22. Автоматический деплой через GitHub Actions</a> 
+
+Репозиторий настроен на автоматический деплой через GitHub Actions.
+
+1. При каждом push в ветку main происходит:
+   - запуск линтера (flake8),
+   - запуск тестов (с использованием SQLite),
+   - сборка Docker-образа,
+   - публикация образа в Docker Hub,
+   - деплой на удалённый сервер (IP: 158.160.199.127 - ***ДЛЯ ИНФО!* В проекте используется динамический IP-адрес поэтому может измениться со временем!**).
+2. Для работы пайплайна настроены секреты в GitHub:
+   - для публикации образов:
+     - DOCKER_HUB_USERNAME
+     - DOCKER_HUB_ACCESS_TOKEN
+   - для деплоя на сервер:
+     - SSH_USER
+     - SERVER_IP
+     - SSH_KEY
+
+После успешного выполнения пайплайна приложение автоматически обновляется и доступно по адресу:
+
+http://158.160.199.127/admin/
