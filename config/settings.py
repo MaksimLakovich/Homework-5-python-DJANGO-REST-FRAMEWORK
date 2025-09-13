@@ -93,7 +93,7 @@ DATABASES = {
 # База данных для тестов при разворачивании приложения (чтоб не разворачивать сразу postgresql достаточно в начале
 # для тестов развернуть sqlite
 if 'test' in sys.argv:
-    # это чтоб выполнять задачи синхронно, без брокера. Чтоб в GitHub Actions не появлялась ошибка при деплое
+    # это нужно чтоб выполнять задачи синхронно, без брокера. Чтоб в GitHub Actions не появлялась ошибка при деплое
     CELERY_TASK_ALWAYS_EAGER = True
     CELERY_TASK_EAGER_PROPAGATES = True
     DATABASES = {

@@ -100,11 +100,25 @@ jobs:
       - name: Deploy to Server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-            # Переходим в папку проекта
-            cd /var/www/lms_system/Homework-5-python-DJANGO-REST-FRAMEWORK
+            # Создаем директорию, если её ещё нет
+            mkdir -p /var/www/lms_system
+            cd /var/www/lms_system
+      
+            # Если проект не склонирован, то клонируем
+            if [ ! -d "Homework-5-python-DJANGO-REST-FRAMEWORK" ]; then
+              git clone git@github.com:maksimlakovich/Homework-5-python-DJANGO-REST-FRAMEWORK.git
+            fi
+      
+            # Переходим внутрь проекта
+            cd Homework-5-python-DJANGO-REST-FRAMEWORK
             
             # Подтягиваем свежие изменения из GitHub (docker-compose.yml, env и т.д.)
-            git pull origin main
+            # 1) fetch подтягивает новые данные.
+            # 2) reset --hard делает локальную ветку идентичной удалённой - отбрасывает все локальные изменения.
+            # Это жёсткий способ: никаких конфликтов, никаких «случайных правок на сервере». Сервер всегда = GitHub.
+            # Для продакшн-деплоя это считается более надёжным подходом.
+            git fetch origin main
+            git reset --hard origin/main
   
             # Тянем новый образ web (который собрал и запушил CI)
             docker compose pull web
