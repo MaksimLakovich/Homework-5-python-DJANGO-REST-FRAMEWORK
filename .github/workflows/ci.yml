@@ -31,6 +31,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
     needs: lint
+    env:
+      SECRET_KEY_FOR_PROJECT: "test_secret_key"  # можно с фейковым ключом, потому что сейчас у нас CI просто гоняет тесты, без привязки к реальным токенам. Второй вариант это в "Run tests with SQLite" ниже добавить "env: SECRET_KEY_FOR_PROJECT: ${{ secrets.SECRET_KEY_FOR_PROJECT }}" и добвить в GitHub еще один секрет SECRET_KEY_FOR_PROJECT
 
     steps:
       - name: Check out code  # клонирование репозитория с использованием action actions/checkout@v3
