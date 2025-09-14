@@ -126,6 +126,8 @@ jobs:
             sudo docker compose pull
             
             # Перезапускаем все сервисы из docker-compose.yml
+            # Docker Compose по умолчанию ищет файл .env (без суффикса). Файл .env.docker он не подхватывает
+            # автоматически. Поэтому если использую .env.docker, то важно явно ссылаться на него в команде
             sudo docker compose --env-file .env.docker up -d --force-recreate
   
             # Чистим старые dangling-образы, чтобы не засорялся сервер
