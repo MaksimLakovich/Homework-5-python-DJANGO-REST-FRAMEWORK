@@ -65,7 +65,7 @@ services:
     env_file:
       - .env.docker
     ports:
-      - "6380:6379"                   # Открываем порт (для дебага)
+      - "6390:6379"                   # Открываем порт (для дебага)
     restart: always
 
   # Celery worker (обрабатывает задачи)

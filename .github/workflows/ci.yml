@@ -100,16 +100,36 @@ jobs:
       - name: Deploy to Server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+            # Создаем директорию, если её ещё нет
             sudo mkdir -p /var/www/lms_system
             sudo chown -R maksim:maksim /var/www/lms_system
             cd /var/www/lms_system
+      
+            # Если проект не склонирован, то клонируем
             if [ ! -d "Homework-5-python-DJANGO-REST-FRAMEWORK" ]; then
               git clone git@github.com:maksimlakovich/Homework-5-python-DJANGO-REST-FRAMEWORK.git
             fi
+      
+            # Переходим внутрь проекта
             cd Homework-5-python-DJANGO-REST-FRAMEWORK
+            
+            # Подтягиваем свежие изменения из GitHub (docker-compose.yml, env и т.д.)
+            # 1) fetch подтягивает новые данные.
+            # 2) reset --hard делает локальную ветку идентичной удалённой - отбрасывает все локальные изменения.
+            # Это жёсткий способ: никаких конфликтов, никаких «случайных правок на сервере». Сервер всегда = GitHub.
+            # Для продакшн-деплоя это считается более надёжным подходом.
+            # 3) Сейчас у меня явно указана ветка "feature/homework_35_2" но для прода потом нужно заменить на "main"
             git fetch origin feature/homework_35_2
             git reset --hard origin/feature/homework_35_2
+  
+            # Подтягиваем все новые образы (web, nginx и т.д.)
             sudo docker compose pull
+            
+            # Перезапускаем все сервисы из docker-compose.yml
+            # Docker Compose по умолчанию ищет файл .env (без суффикса). Файл .env.docker он не подхватывает
+            # автоматически. Поэтому если использую .env.docker, то важно явно ссылаться на него в команде
             sudo docker compose --env-file .env.docker up -d --force-recreate
+  
+            # Чистим старые dangling-образы, чтобы не засорялся сервер
             sudo docker image prune -f
           EOF
