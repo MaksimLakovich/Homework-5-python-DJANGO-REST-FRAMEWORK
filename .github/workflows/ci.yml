@@ -118,6 +118,7 @@ jobs:
             # 2) reset --hard делает локальную ветку идентичной удалённой - отбрасывает все локальные изменения.
             # Это жёсткий способ: никаких конфликтов, никаких «случайных правок на сервере». Сервер всегда = GitHub.
             # Для продакшн-деплоя это считается более надёжным подходом.
+            # 3) Сейчас у меня явно указана ветка "feature/homework_35_2" но для прода потом нужно заменить на "main"
             git fetch origin feature/homework_35_2
             git reset --hard origin/feature/homework_35_2
   
@@ -125,7 +126,7 @@ jobs:
             sudo docker compose pull
             
             # Перезапускаем все сервисы из docker-compose.yml
-            sudo docker compose up -d --force-recreate
+            sudo docker compose --env-file .env.docker up -d --force-recreate
   
             # Чистим старые dangling-образы, чтобы не засорялся сервер
             sudo docker image prune -f
