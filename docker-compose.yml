@@ -53,7 +53,7 @@ services:
 #      POSTGRES_USER: ${DATABASE_USER}
 #      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
     ports:
-      - "5433:5432"                   # Делаем доступным Postgres на localhost:5432
+      - "5440:5432"                   # Делаем доступным Postgres на localhost:5432
     restart: always
 
   # Redis (для Celery брокера)
