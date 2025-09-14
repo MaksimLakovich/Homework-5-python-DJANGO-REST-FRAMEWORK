@@ -118,6 +118,8 @@ jobs:
             # 2) reset --hard делает локальную ветку идентичной удалённой - отбрасывает все локальные изменения.
             # Это жёсткий способ: никаких конфликтов, никаких «случайных правок на сервере». Сервер всегда = GitHub.
             # Для продакшн-деплоя это считается более надёжным подходом.
+#            git fetch origin main
+#            git reset --hard origin/main
             git fetch origin feature/homework_35_2
             git reset --hard origin/feature/homework_35_2
   
