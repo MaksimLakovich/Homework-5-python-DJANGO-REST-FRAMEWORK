@@ -122,11 +122,11 @@ jobs:
             git reset --hard origin/feature/homework_35_2
   
             # Подтягиваем все новые образы (web, nginx и т.д.)
-            docker compose pull
+            sudo docker compose pull
             
             # Перезапускаем все сервисы из docker-compose.yml
-            docker compose up -d --force-recreate
+            sudo docker compose up -d --force-recreate
   
             # Чистим старые dangling-образы, чтобы не засорялся сервер
-            docker image prune -f
+            sudo docker image prune -f
           EOF
