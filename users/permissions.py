@@ -11,8 +11,8 @@ class IsModerator(BasePermission):
         Используется в контроллерах для ограничения доступа к операциям создания и удаления уроков/курсов."""
 
         return (
-                request.user.is_authenticated and
-                request.user.groups.filter(name="Moderators").exists()
+            request.user.is_authenticated
+            and request.user.groups.filter(name="Moderators").exists()
         )
 
 

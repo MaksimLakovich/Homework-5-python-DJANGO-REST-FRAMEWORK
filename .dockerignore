@@ -4,3 +4,6 @@ __pycache__
 *.pyc
 *.log
 .env.docker
+__pycache__/
+*.sqlite3
+*.egg-info
