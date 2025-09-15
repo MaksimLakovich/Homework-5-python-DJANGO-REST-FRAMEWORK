@@ -17,7 +17,7 @@ services:
     volumes:
       - .:/lms_system_project                 # Монтируем локальный проект внутрь контейнера
       - media_data:/lms_system_project/media  # Отдельный том для медиафайлов (чтобы они не терялись при пересборке)
-      - static_volume:/lms_system_project/staticfiles  # Отдельный том для статики - будет нужен, если появится фронт. ПОКА ЗАКОММЕНТИРОВАЛ так как это на будущее для фронта
+      - static_volume:/lms_system_project/staticfiles  # Отдельный том для статики - будет нужен, если появится фронт
     ports:
       - "8001:8000"                   # Пробрасываем порт (localhost:8001 → контейнер:8000)
     env_file:
@@ -36,7 +36,7 @@ services:
       - "8080:80"                                             # Пробрасываем порт 80 (HTTP) наружу (внешний 8080 → внутренний 80)
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf              # Монтируем наш конфиг внутрь контейнера
-      - static_volume:/lms_system_project/staticfiles         # Том для статики, чтобы nginx видел собранные файлы- будет нужен, если появится фронт. ПОКА ЗАКОММЕНТИРОВАЛ так как это на будущее для фронта
+      - static_volume:/lms_system_project/staticfiles         # Том для статики, чтобы nginx видел собранные файлы - будет нужен, если появится фронт
     depends_on:
       - web                                                   # Запускаем nginx только после Django
 
@@ -53,7 +53,7 @@ services:
 #      POSTGRES_USER: ${DATABASE_USER}
 #      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
     ports:
-      - "5440:5432"                   # Делаем доступным Postgres на localhost:5432
+      - "5440:5432"                   # Делаем доступным Postgres (внешний 5440 → внутренний 5432)
     restart: always
 
   # Redis (для Celery брокера)
@@ -65,7 +65,7 @@ services:
     env_file:
       - .env.docker
     ports:
-      - "6390:6379"                   # Открываем порт (для дебага)
+      - "6390:6379"                   # Открываем порт (внешний 6390 → внутренний 6379)
     restart: always
 
   # Celery worker (обрабатывает задачи)
@@ -102,5 +102,5 @@ services:
 volumes:
   postgres_data:    # для БД Postgres
   media_data:       # для медиафайлов Django (загруженные пользователями картинки/файлы)
-  static_volume:    # для собранных статических файлов (чтобы nginx их видел) - ПОКА ЗАКОММЕНТИРОВАЛ так как это на будущее для фронта
+  static_volume:    # для собранных статических файлов (чтобы nginx их видел) - это на будущее для фронта
   redis_data:       # для Redis (заменил redis_volume на redis_data ради единообразия)

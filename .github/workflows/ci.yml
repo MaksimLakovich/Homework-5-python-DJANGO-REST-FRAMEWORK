@@ -1,10 +1,9 @@
 name: Django CI for LMS_system_for_education
 
-#on:
-#  push:
-#    branches:
-#      - main         # деплой только при пуше (т.е. после merge) в main
-on: [push]
+on:
+  push:
+    branches:
+      - main         # деплой только при пуше (т.е. после merge) в main
 
 jobs:
 
@@ -118,9 +117,9 @@ jobs:
             # 2) reset --hard делает локальную ветку идентичной удалённой - отбрасывает все локальные изменения.
             # Это жёсткий способ: никаких конфликтов, никаких «случайных правок на сервере». Сервер всегда = GitHub.
             # Для продакшн-деплоя это считается более надёжным подходом.
-            # 3) Сейчас у меня явно указана ветка "feature/homework_35_2" но для прода потом нужно заменить на "main"
-            git fetch origin feature/homework_35_2
-            git reset --hard origin/feature/homework_35_2
+            # 3) Можно указать другую ветку например "feature/homework_35_2" если нужно деплоить раньше на develop или feature, но для прода должно быть "main"
+            git fetch origin main
+            git reset --hard main
   
             # Подтягиваем все новые образы (web, nginx и т.д.)
             sudo docker compose pull
