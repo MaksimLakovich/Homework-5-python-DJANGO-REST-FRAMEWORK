@@ -480,6 +480,13 @@ CELERY_RESULT_BACKEND=
 # Настройка SMTP-сервера Яндекса для отправки писем пользователям:
 YANDEX_EMAIL_HOST_USER=
 YANDEX_EMAIL_HOST_PASSWORD=password_here
+
+# Если используется нестандартный порт (например, http://127.0.0.1:8080/ вместо http://127.0.0.1:8000/),
+# то Django будет не доверять адресу http://127.0.0.1:8080/, так как источник будет не совпадать с
+# доверенным доменом из ALLOWED_HOSTS или CSRF_TRUSTED_ORIGINS и выдаст 403 CSRF verification failed.
+# Чтоб исключить ошибку нужно добавить параметр CSRF_TRUSTED_ORIGINS в settings.py и указывать в нем список
+# доверенных доменов с портами
+CSRF_TRUSTED_ORIGINS=http://хост:8080
 ```
 
 
@@ -530,6 +537,13 @@ YANDEX_EMAIL_HOST_PASSWORD=password_here
 
 # Имя пользователя DockerHub с которым связан наш репозитория проекта на GitHub через настройки секретного ключа там
 DOCKER_HUB_USERNAME=
+
+# Если используется нестандартный порт (например, http://127.0.0.1:8080/ вместо http://127.0.0.1:8000/),
+# то Django будет не доверять адресу http://127.0.0.1:8080/, так как источник будет не совпадать с
+# доверенным доменом из ALLOWED_HOSTS или CSRF_TRUSTED_ORIGINS и выдаст 403 CSRF verification failed.
+# Чтоб исключить ошибку нужно добавить параметр CSRF_TRUSTED_ORIGINS в settings.py и указывать в нем список
+# доверенных доменов с портами
+CSRF_TRUSTED_ORIGINS=http://хост:8080
 ```
 
 
