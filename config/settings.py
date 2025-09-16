@@ -197,3 +197,10 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': crontab(hour=0, minute=0),  # Каждый день в полночь
     },
 }
+
+# Если используется нестандартный порт (например, http://127.0.0.1:8080/admin/ вместо http://127.0.0.1:8000/admin/),
+# то Django будет не доверять адресу http://127.0.0.1:8080/admin/, так как источник будет не совпадать с
+# доверенным доменом из ALLOWED_HOSTS или CSRF_TRUSTED_ORIGINS и выдаст 403 CSRF verification failed.
+# Чтоб исключить ошибку нужно добавить параметр CSRF_TRUSTED_ORIGINS в settings.py и указывать в нем список
+# доверенных доменов с портами
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
