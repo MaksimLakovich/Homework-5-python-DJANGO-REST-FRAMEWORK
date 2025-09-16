@@ -122,7 +122,7 @@ jobs:
             git reset --hard main
   
             # Подтягиваем все новые образы (web, nginx и т.д.)
-            sudo docker compose pull
+            sudo docker compose --env-file .env.docker pull
             
             # Перезапускаем все сервисы из docker-compose.yml
             # Docker Compose по умолчанию ищет файл .env (без суффикса). Файл .env.docker он не подхватывает
