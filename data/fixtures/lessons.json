@@ -1,0 +1,74 @@
+[
+    {
+        "model": "lms_system.lesson",
+        "pk": 1,
+        "fields": {
+            "title": "Урок 1 - Введение в Python",
+            "description": "Описание урока 1 по курсу Основы Python.",
+            "course": 1,
+            "preview": null,
+            "video_url": "https://youtube.com/lesson_1",
+            "owner": 12
+        }
+    },
+    {
+        "model": "lms_system.lesson",
+        "pk": 2,
+        "fields": {
+            "title": "Урок 2 - Переменные и типы данных",
+            "description": "Описание урока 2 по курсу Основы Python.",
+            "course": 1,
+            "preview": null,
+            "video_url": "https://youtube.com/lesson_2",
+            "owner": 12
+        }
+    },
+    {
+        "model": "lms_system.lesson",
+        "pk": 3,
+        "fields": {
+            "title": "Урок 3 - Условные операторы",
+            "description": "Описание урока 3 по курсу Основы Python.",
+            "course": 1,
+            "preview": null,
+            "video_url": "https://youtube.com/lesson_3",
+            "owner": 12
+        }
+    },
+    {
+        "model": "lms_system.lesson",
+        "pk": 4,
+        "fields": {
+            "title": "Урок 4 - Функции в Python",
+            "description": "Описание урока 4 по курсу Основы Python.",
+            "course": 1,
+            "preview": null,
+            "video_url": "https://youtube.com/lesson_4",
+            "owner": 12
+        }
+    },
+    {
+        "model": "lms_system.lesson",
+        "pk": 5,
+        "fields": {
+            "title": "Урок 1 - Введение в Django",
+            "description": "Описание урока 1 по курсу Django для начинающих.",
+            "course": 2,
+            "preview": null,
+            "video_url": "https://youtube.com/lesson_5",
+            "owner": 13
+        }
+    },
+    {
+        "model": "lms_system.lesson",
+        "pk": 6,
+        "fields": {
+            "title": "Урок 2 - Работа с ORM в Django",
+            "description": "Описание урока 2 по курсу Django для начинающих.",
+            "course": 2,
+            "preview": null,
+            "video_url": "https://youtube.com/lesson_6",
+            "owner": 13
+        }
+    }
+]

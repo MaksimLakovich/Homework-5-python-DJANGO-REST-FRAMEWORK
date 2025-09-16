@@ -1,0 +1,22 @@
+[
+    {
+        "model": "lms_system.course",
+        "pk": 1,
+        "fields": {
+            "title": "Основы Python",
+            "description": "Изучение основ языка программирования Python.",
+            "preview": null,
+            "owner": 12
+        }
+    },
+    {
+        "model": "lms_system.course",
+        "pk": 2,
+        "fields": {
+            "title": "Django для начинающих",
+            "description": "Создание веб-приложений с использованием Django.",
+            "preview": null,
+            "owner": 13
+        }
+    }
+]
